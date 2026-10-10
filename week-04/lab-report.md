@@ -10,10 +10,10 @@
 
 | Field | Value |
 | --- | --- |
-| Name | <your name> |
-| Group | <your group> |
-| AI assistant | <e.g. Claude, ChatGPT, Gemini, DeepSeek, Grok> |
-| Exact model | <the exact model name with its version, e.g. claude-sonnet-4-5> |
+| Name | Anzara Nurbek |
+| Group | SE-Monday, 16:00-19:00  |
+| AI assistant | Claude |
+| Exact model | claude-sonnet-5 |
 | Renderer | <PlantUML web server / VS Code extension / IntelliJ plugin / local jar> |
 | Behaviour diagram | <sequence / activity / both> |
 | Stories used | <my week-03 stories, revised / the reference set from README §3> |
@@ -59,15 +59,21 @@ AI's first replies are saved as files in `models/original/` — do not paste the
 
 ## 3. Task 1 — use-case review
 
-**Assumptions the AI listed:** <one line each, or "the AI listed none" — that is a finding too>
+**Assumptions the AI listed:** 
 
-At least **two** findings. A finding names the element, the problem and the rule or story that
-proves it is a problem.
+1) Student and Administrator are separate actors, no generalization; 
+2) users are already identified, Login not modelled; 
+3) "own" means the system knows who made each booking; 
+4) confirmation is shown by the system, no external notification actor; 
+5) Time is not an actor; 
+6) Review usage is read-only; 
+7) what happens to existing bookings on a blocked room is left unspecified.
 
 | # | Element | Problem | Rule or story | Fix |
 | --- | --- | --- | --- | --- |
-| 1 | <e.g. Student → Send confirmation> | <what is wrong> | <R4 / US-01 / scenario sentence> | <what you changed> |
-| 2 | <element> | <problem> | <rule or story> | <fix> |
+| 1 | UC_Book "Book study room" | Name differs from the scenario and the Task 3 prompts, which call it "Book room"; the same goal would get two names across diagrams | Scenario sentence "book a room"; Task 3 "Book room" | Renamed to "Book room" (also "Study Room" removed from title and boundary) |
+| 2 | Note on UC_Book, R2 line | Does not say whether touching bookings (12:00 end, 12:00 start) overlap; the scenario leaves this undecided and it must be declared | R2 | Added A1: end time is exclusive, touching bookings do not overlap |
+| 3 | Assumption 7 / note on UC_Block | Leaves existing bookings on a blocked room "unspecified" instead of declaring a decision | R3, US-04 | Added A2 to the note: existing bookings are kept; R3 only stops new bookings |
 
 ---
 
