@@ -10,9 +10,9 @@
 | Group | SE-Monday, 16:00-19:00  |
 | AI assistant | Claude |
 | Exact model | claude-sonnet-5 |
-| Renderer | <PlantUML web server / VS Code extension / IntelliJ plugin / local jar> |
+| Renderer | PlantUML web server |
 | Behaviour diagram | activity |
-| Stories used | <my week-03 stories, revised / the reference set from README §3> |
+| Stories used | the reference set from README §3> |
 
 ---
 
@@ -143,11 +143,16 @@ diagram**, spelled exactly as in the diagram, with the story ID it traces to.
 
 | Requirement / story | Use case | Classes | Behaviour element |
 | --- | --- | --- | --- |
-| R1 | <use case> | <classes and attributes> | <message, guard or decision> |
-| R2 | <use case> | <classes, note> | <message, guard or decision> |
-| R3 | <use case> | <classes and attributes> | <message, guard or decision> |
-| R4 | <use case> | <classes> | <message or action> |
-| <US-01> | <Book room> | <Student, Booking, Room> | <message or action> |
+| R1 | Book room | Booking.startTime, Booking.endTime, /duration; note on Booking | decision "Time range valid? (R1)" → [no] "invalid time range" (R1) |
+| R2 | Book room | Booking.status (ACTIVE), Booking.overlaps(); R2 note on Booking with A1 | decision "Overlaps an ACTIVE booking of this room? (R2)" → [yes] "slot already booked" (R2) |
+| R3 | Book room | Room.isBlocked, Room.book(); note on Room | decision "Room blocked? (R3)" → [yes] "room is blocked" (R3) |
+| R4 | Book room | Booking.confirmationCode | actions "Generate confirmation code" → "Receive booking confirmation" |
+| US-01 | Book room | Student, Room, Booking; Room.book() | the whole activity diagram: three checks, then "Create booking (status = ACTIVE)" |
+| US-02 | View room availability | Room.isAvailable(start, end), Room.isBlocked, Booking.status | not modelled in the activity diagram (only Book room is) |
+| US-03 | Cancel own booking | Booking.cancel(requester : Student), BookingStatus.CANCELLED | not modelled in the activity diagram (only Book room is) |
+| US-04 | Block room | Room.block(), Room.isBlocked; A2 in note on Room | not modelled in the activity diagram (only Book room is) |
+| US-05 | Unblock room | Room.unblock(), Room.isBlocked | not modelled in the activity diagram (only Book room is) |
+| US-06 | Review room usage | Room.getBookings(from, to), Booking | not modelled in the activity diagram (only Book room is) |
 
 ---
 
@@ -155,13 +160,12 @@ diagram**, spelled exactly as in the diagram, with the story ID it traces to.
 
 At least **three** rows, and at least one for each required diagram (use case, class, your
 behaviour diagram). "Before" is what the AI produced; "After" is what you submitted.
-
-| # | Diagram | Before (AI's original) | After (your revision) | Reason |
-| --- | --- | --- | --- | --- |
-| 1 | <use case> | <before> | <after> | <rule, story or notation reason> |
-| 2 | <class> | <before> | <after> | <reason> |
-| 3 | <sequence / activity> | <before> | <after> | <reason> |
-
+| 1 | use case | "Book study room", title and boundary "Study Room Booking" | "Book room", "Room Booking" | Scenario and Task 3 call it "Book room"; one name across all diagrams |
+| 2 | use case | Use case labels with "\n(US-0x)"; R2 note silent on touching bookings; existing bookings on a blocked room "unspecified" | Plain labels; A1 added to the Book room note, A2 added to the Block room note | §7 must spell use cases exactly; A1 and A2 declared instead of left open (R2, R3) |
+| 3 | class | R2 in `note left of Room` | R2 with A1 in `note right of Booking` | README §4 convention: R2 is a note on Booking |
+| 4 | class | `confirmationCode : String [0..1]` | `confirmationCode : String` | R4: every successful booking has a confirmation, and a Booking exists only after success |
+| 5 | class | Room note named only R3 as a reason for book() to reject | Room note also names R1 and R2 | Accepted critique issue 2 (§6): class and activity diagrams must agree |
+| 6 | activity | Decisions "Time range valid?", "Room blocked?", "Overlaps an ACTIVE booking of this room?" with no rule IDs | (R1), (R3), (R2) added to the decisions; A1 note added; title "Book room" | Each decision traces to its rule; A1 declared; consistent naming |
 ---
 
 ## 9. Checker output
@@ -170,17 +174,56 @@ Paste the complete output of `python tests/check_models.py`, then explain **ever
 keeping**. The same IDs go in `submission.yml` under `checker.kept_fails`. A FAIL you report and explain costs you nothing. One you hide costs the whole criterion.
 
 ```text
-<paste the full output>
+Week 04 structural check - shape only, never quality
+
+UC1  PASS  Student and Administrator declared
+UC2  PASS  named system boundary: "Smart Campus Room Booking System"
+UC3  PASS  all actors declared outside the boundary
+UC4  PASS  all scenario goals present (6 use cases)
+UC5  PASS  no actor is associated with a confirmation use case
+UC6  PASS  actor responsibilities match the scenario
+UC7  PASS  use cases are goals, not screens or components
+UC8  PASS  every include / extend / generalization carries a ' why: comment (or there are none)
+UC9  PASS  revised diagram differs from the AI's original
+CL1  PASS  Student, Room and Booking present
+CL2  PASS  Booking is associated with Student and with Room
+CL3  PASS  every association has multiplicities at both ends
+CL4  PASS  1 student / 1 room per booking, 0..* bookings per student and per room
+CL5  PASS  every inheritance / composition / aggregation carries a ' why: comment (or there are none)
+CL6  PASS  only domain concepts in the class diagram
+CL7  PASS  attributes needed by R1-R3 are present
+CL8  PASS  a note states R2 (no overlapping active bookings)
+AC1  PASS  initial and final nodes present
+AC2  PASS  separate decisions check R1, R3 and R2 (3 decisions)
+AC3  PASS  every branch has a labelled guard
+AC4  PASS  no parallel paths
+AC5  PASS  confirmation on success, rejection on failure
+AC6  PASS  creation comes after all rule checks
+FI1  PASS  the AI's original output is kept for every diagram
+FI2  PASS  a rendered image for every diagram
+LR1  PASS  §1 setup filled (tool and model recorded)
+LR2  PASS  5 prompts pasted in §2
+LR3  PASS  3 use-case findings in §3
+LR4  PASS  §4 relationships read both ways, 2 assumption(s) declared
+LR5  PASS  3 behaviour-diagram findings in §5
+LR6  PASS  4 critique issues with a verdict
+LR7  PASS  5 change-log rows covering all three diagrams
+CS1  PASS  6 approved stories
+CS2  PASS  §7 traces R1-R4 into the diagrams
+CS3  PASS  every use case traces to an approved story
+
+SUMMARY pass=35 fail=0 error=0
+A FAIL you report and explain in lab-report.md §9 costs you nothing. One you hide costs the criterion.
 ```
 
-**FAILs I am keeping, and why:** <one line per check ID, or "none">
+**FAILs I am keeping, and why:** none
 
 ---
 
 ## 10. Conclusion (120–180 words)
 
-<Which diagram did the AI get most wrong, and what exactly was wrong? Which error would have
-reached the code if nobody had reviewed it? What did the critique find that you missed — and what
-did it claim that was false? Be specific: "the AI got the multiplicities wrong" is worth nothing;
-"the AI put 1..* on the Booking end, which says every room must already have a booking" is worth
-everything.>
+The class diagram had the most serious mistakes. The AI put rule R2 in a note on Room, but it belongs on Booking. It also gave Booking.confirmationCode the multiplicity [0..1]. This means a booking can exist without a confirmation code. That is wrong: R4 says every successful booking must have one, and the AI's own assumption said the same thing. If this [0..1] had gone into the code, it would have become a nullable field, and the system could save a booking with no confirmation code.
+
+The activity diagram had the three checks in the right places. However, the decision points did not say which rule they were checking, so R1–R3 only appeared on the rejection actions. The AI was also inconsistent with names: it called the same goal "Book study room" in one place and "Book room" in another.
+
+The AI's critique was partly correct. It rightly noticed that the story source was still a placeholder, and that the note on Room listed only R3 for book(). But it made two mistakes. First, it suggested moving R2 back to Room, which goes against the lab convention. Second, it claimed the file encoding was broken. In fact, the file is UTF-8; the strange characters appeared only because the text was copied to the clipboard.

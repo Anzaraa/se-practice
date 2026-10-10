@@ -5,22 +5,20 @@ responsible for the accuracy of everything you submit, including every diagram a
 
 | Tool | Exact model | Used for | Which files it touched |
 | --- | --- | --- | --- |
-| <assistant> | <exact model with its version> | Task 1 — use-case draft | `models/original/use-case.puml` |
-| <assistant> | <model> | Task 2 — class draft | `models/original/class.puml` |
-| <assistant> | <model> | Task 3A or 3B — behaviour draft | `models/original/<sequence or activity>.puml` |
-| <assistant> | <model> | Critique of the revised diagrams | `lab-report.md` §6 |
-| | | | |
+| Claude (drafting chat) | Claude sonnet 5 | Task 1 — use-case draft | `models/original/use-case.puml` |
+| Claude (drafting chat) | Claude sonnet 5 | Task 2 — class draft | `models/original/class.puml` |
+| Claude (drafting chat) | Claude sonnet 5 | Task 3B — activity draft | `models/original/activity.puml` |
+| Claude (new chat) | Claude sonnet 5 | Critique of the revised diagrams | `lab-report.md` §6 |
+| Claude (separate tutoring chat) | Claude sonnet 5 | pointed out errors in the drafts; suggested the revisions and wrote the wording of findings and tables | `models/use-case.puml`, `models/class.puml`, `models/activity.puml` |
 
-**The files in `models/original/` are the AI's first replies, unedited:** yes / no
-<!-- If "no", say what you changed before saving. An honest "no" costs far less than a quiet edit. -->
+**The files in `models/original/` are the AI's first replies, unedited:** yes
 
-**The revised diagrams in `models/` were corrected by me, and I can explain every element:** yes / no
+**The revised diagrams in `models/` were corrected by me, and I can explain every element:** yes
 
-**Did an AI write any part of `lab-report.md` other than the critique it produced?** yes / no
-<!-- If yes: which section, and what you changed afterwards. -->
+**Did an AI write any part of `lab-report.md` other than the critique it produced?** yes
 
 **Anything I accepted from the AI without fully understanding it:**
-<!-- Name the file and the element. -->
+Nothing - I checked every element and can explain it.
 
-Signed: <your name>
-Date:
+Signed: Anzara NUrbek
+Date: 10.10.2026
