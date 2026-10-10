@@ -85,24 +85,29 @@ One row per association in your **revised** class diagram.
 
 | Association | Read left → right | Read right → left | Multiplicities |
 | --- | --- | --- | --- |
-| <Student — Booking> | <one student makes 0..* bookings> | <each booking belongs to exactly 1 student> | <1 / 0..*> |
-| <Room — Booking> | <...> | <...> | <...> |
+| Student — Booking | one student makes 0..* bookings | each booking belongs to exactly 1 student | 1 / 0..* |
+| Room — Booking | one room has 0..* bookings over time | each booking reserves exactly 1 room | 1 / 0..* |
+
 
 ### 4.2 Constraints the multiplicities cannot show
 
-- R2: <how your diagram states it — which note, on which class>
-- <any other rule that is not visible in multiplicities>
+- R2: stated in `note right of Booking` — no two ACTIVE bookings of the same Room overlap in time; touching bookings do not overlap (A1).
+- R1: also in the Booking note — startTime is in the future at creation and 0 < duration <= 2 h; a multiplicity cannot express a time range.
+- R3: in the note on Room — if isBlocked is true, book() is rejected; this depends on an attribute value, not on how many links exist.
+
 
 ### 4.3 Assumptions
 
-- A1: <an assumption you had to make — e.g. what happens to existing bookings when a room is blocked>
-- <A2 ...>
+- A1: touching bookings (one ends at 12:00, the next starts at 12:00) do not overlap; the end time is exclusive, so two bookings overlap only when start1 < end2 and start2 < end1.
+- A2: blocking a room keeps its existing bookings; R3 only stops new bookings, and nothing in the scenario says existing ones are cancelled.
 
 ### 4.4 Findings
 
 | # | Element | Problem | Rule or story | Fix |
 | --- | --- | --- | --- | --- |
-| 1 | <element> | <problem> | <rule or story> | <fix> |
+| 1 | `note left of Room` holding R2 | R2 was written on Room, but R2 is a constraint between Booking objects (active bookings of the same room must not overlap); the lab convention puts it on Booking | R2; README §4 convention | Moved the R2 lines into `note right of Booking` and added A1 there |
+| 2 | `Booking.confirmationCode : String [0..1]` | [0..1] says a booking may exist without a confirmation, but a Booking exists only after successful creation and R4 says every successful booking produces a confirmation; it also contradicts the AI's own assumption | R4 | Removed [0..1]: `confirmationCode : String` |
+| 3 | Diagram title "Study Room Booking" | Same system named differently from the revised use-case diagram ("Room Booking"); inconsistent names across diagrams | Scenario wording "book a room" | Changed the title to "Smart Campus - Room Booking" |
 
 ---
 
