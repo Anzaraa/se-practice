@@ -1,9 +1,5 @@
 # Approved stories — Smart Campus study room booking
 
-> **Replace this file's stories with your own Week 03 stories, as revised after review**
-> (`week-03/requirements/user-stories.md`), keeping their IDs. If you did not complete Week 03, or
-> your set was rejected in review, keep the reference set below and say so in `lab-report.md` §1.
-> Either way, the IDs here are the ones your consistency table (§7) must use.
 
 **Source of this set:** the reference set
 
