@@ -1,0 +1,45 @@
+schema: 1
+week: "04"
+
+student:
+  name: Anzara Nurbek
+  student_id:         24B031941 
+  github:             Anzaraa 
+assistant:
+  tool:     Claude           
+  model:       Claude Sonnet 5        
+
+counts:
+  behaviour_diagram: activity  
+  stories_source:   reference  
+  use_cases:        6   
+  change_log_rows:  5  
+
+checker:
+  
+  pass: 35
+  fail:  0
+  error:  0
+  commit:       e9b00f6       
+  kept_fails: []      
+
+assumptions:
+  
+  overlap_touching_bookings:  allowed 
+  blocking_a_booked_room:   keep-bookings   
+
+traceability:
+ 
+  use_cases_not_traced: []     
+  rules_not_shown: []          
+
+review_findings:
+  
+  - "Room note held R2; moved R2 with A1 to the note on Booking (README §4 convention)"
+  - "Booking.confirmationCode was [0..1], which allows a booking without the confirmation R4 requires; changed to exactly one"
+  - "Activity decisions named no rule; added (R1), (R3), (R2) to the three decisions"
+
+honesty:
+  originals_unedited:           yes      
+  can_explain_everything_submitted:  yes 
+  ai_usage_disclosed:          yes       

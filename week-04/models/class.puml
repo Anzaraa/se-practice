@@ -1,0 +1,71 @@
+@startuml domain-class-diagram
+title Smart Campus - Room Booking (Domain Class Diagram)
+skinparam classAttributeIconSize 0
+hide empty members
+
+class Student {
+  studentId : String
+  name : String
+  --
+  getBookings() : Booking[0..*]
+}
+
+class Room {
+  roomId : String
+  name : String
+  isBlocked : Boolean
+  --
+  isAvailable(start : DateTime, end : DateTime) : Boolean
+  book(student : Student, start : DateTime, end : DateTime) : Booking
+  block()
+  unblock()
+  getBookings(from : DateTime, to : DateTime) : Booking[0..*]
+}
+
+class Booking {
+  bookingId : String
+  startTime : DateTime
+  endTime : DateTime
+  status : BookingStatus
+  confirmationCode : String
+  /duration : Duration
+  --
+  isActive() : Boolean
+  overlaps(start : DateTime, end : DateTime) : Boolean
+  cancel(requester : Student)
+}
+
+enum BookingStatus {
+  ACTIVE
+  CANCELLED
+}
+
+Student "1" -- "0..*" Booking : makes >
+Booking "0..*" -- "1" Room : reserves >
+
+note right of Booking
+  R1: startTime > now at creation,
+      0 < duration <= 2 h
+  R4: confirmationCode is set when
+      the booking is created successfully
+  US-03: cancel() only by the Student
+      who made the booking; sets
+      status = CANCELLED
+  R2: no two ACTIVE bookings of the
+      same Room overlap in time
+  A1: touching bookings (12:00 end,
+         12:00 start) do not overlap
+end note
+
+note left of Room
+  
+  R3: if isBlocked, book() is rejected
+  book() also rejects on R1 (time range)
+      and R2 (overlap)
+  A2: existing bookings are kept
+      when a room is blocked
+  isAvailable() = not isBlocked and no
+      overlapping ACTIVE booking (US-02)
+end note
+
+@enduml
