@@ -1,9 +1,5 @@
 # Week 04 — Lab report: Modeling the System with UML
 
-> The single worksheet for this lab. Fill in every section. **Do not delete, rename or renumber
-> the headings** — the checker and the grader find your work by them. Replace every `<...>`
-> placeholder; a row that still contains `<...>` counts as empty.
-
 ---
 
 ## 1. Setup
@@ -15,7 +11,7 @@
 | AI assistant | Claude |
 | Exact model | claude-sonnet-5 |
 | Renderer | <PlantUML web server / VS Code extension / IntelliJ plugin / local jar> |
-| Behaviour diagram | <sequence / activity / both> |
+| Behaviour diagram | activity |
 | Stories used | <my week-03 stories, revised / the reference set from README §3> |
 
 ---
@@ -28,31 +24,31 @@ AI's first replies are saved as files in `models/original/` — do not paste the
 ### 2.1 Task 1 — use-case prompt
 
 ```text
-<paste>
+Using the supplied scenario and approved stories, generate PlantUML for a use-case diagram. Include Student and Administrator outside a named system boundary. Model their goals, show justified associations, and list assumptions. Use include or extend only with a clear reason.
 ```
 
 ### 2.2 Task 2 — class prompt
 
 ```text
-<paste>
+Create a UML domain class diagram in PlantUML for Smart Campus. Start with Student, Room, and Booking. Add attributes, appropriate operations, and association multiplicities. Add other classes only when requirements justify them. Explain each relationship and list assumptions. Avoid unjustified inheritance or composition.
 ```
 
 ### 2.3 Task 3 — behaviour prompt (3A sequence or 3B activity)
 
 ```text
-<paste>
+Generate a UML activity diagram in PlantUML for Book room. Show the initial node, actions, guarded decisions, and final nodes. Check the time range, blocked-room status, and overlapping bookings. Show confirmation after success and rejection after failure. Use branches rather than parallel paths unless concurrency is required.
 ```
 
 ### 2.4 Focused correction prompts (if you sent any)
 
 ```text
-<paste, or write "none">
+none
 ```
 
 ### 2.5 Critique prompt
 
 ```text
-<paste>
+Compare my diagrams with the requirements. Identify missing rules, inconsistent names, and unjustified elements. Cite each issue and propose a specific correction.
 ```
 
 ---
@@ -113,14 +109,15 @@ One row per association in your **revised** class diagram.
 
 ## 5. Task 3 — behaviour diagram review
 
-**Option chosen and why:** <3A sequence / 3B activity — one sentence on why>
+**Option chosen and why:** 3B activity — the task is one workflow with three sequential rule checks, and an activity diagram shows each check as its own decision with labelled guards.
 
-**Design components added beyond the domain model:** <name each one, e.g. `BookingService` —
-what it does in one line; write "none" for an activity diagram>
+**Design components added beyond the domain model:** none — the activity diagram uses only the Student and System swimlanes; no service or repository classes.
 
 | # | Element | Problem | Rule or story | Fix |
 | --- | --- | --- | --- | --- |
-| 1 | <element> | <problem> | <rule or story> | <fix> |
+| 1 | Decisions "Time range valid?", "Room blocked?", "Overlaps an ACTIVE booking of this room?" | None of the three decisions names the rule it checks; R1–R3 appear only in the rejection actions, so the reader cannot see from the decision which rule is tested | R1, R2, R3; README §4 convention `if (Room blocked? (R3))` | Added (R1), (R3) and (R2) to the three decision conditions |
+| 2 | Diagram title "Book study room (US-01)" | Use case is called "Book room" in the revised use-case diagram and in the Task 3 prompt; the same goal had two names | US-01; Task 3 prompt "Book room" | Changed the title to "Book room (US-01)" |
+| 3 | R2 decision "Overlaps an ACTIVE booking of this room?" | Does not say whether touching bookings (12:00 end, 12:00 start) count as overlapping; the scenario leaves this undecided | R2 | Added a note with A1: touching bookings do not overlap |
 
 ---
 

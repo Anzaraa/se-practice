@@ -1,0 +1,44 @@
+@startuml activity-book-room
+title Smart Campus - Book room (US-01) - Activity Diagram
+
+|Student|
+start
+:Choose room and time slot
+(start, end);
+:Submit booking request;
+
+|System|
+if (Time range valid? (R1)\n(start in future and\n0 < duration <= 2 h)) then ([yes])
+  if (Room blocked? (R3)) then ([no])
+    if (Overlaps an ACTIVE booking\nof this room? (R2)) then ([no])
+      :Create booking
+      (status = ACTIVE);
+      :Generate confirmation code;
+      |Student|
+      :Receive booking confirmation;
+      stop
+    else ([yes])
+      |System|
+      :Set rejection reason:
+      "slot already booked" (R2);
+      note right
+        A1: touching bookings (12:00 end,
+        12:00 start) do not overlap
+      end note
+    endif
+  else ([yes])
+    :Set rejection reason:
+    "room is blocked" (R3);
+  endif
+else ([no])
+  :Set rejection reason:
+  "invalid time range" (R1);
+endif
+
+|System|
+:Reject booking request;
+|Student|
+:Receive rejection with reason;
+stop
+
+@enduml
