@@ -5,7 +5,7 @@
 > your set was rejected in review, keep the reference set below and say so in `lab-report.md` §1.
 > Either way, the IDs here are the ones your consistency table (§7) must use.
 
-**Source of this set:** <my week-03 stories, revised / the reference set>
+**Source of this set:** the reference set
 
 ## Scenario (from the Lesson 04 practice deck, slide 7)
 

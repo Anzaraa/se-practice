@@ -60,6 +60,8 @@ end note
 note left of Room
   
   R3: if isBlocked, book() is rejected
+  book() also rejects on R1 (time range)
+      and R2 (overlap)
   A2: existing bookings are kept
       when a room is blocked
   isAvailable() = not isBlocked and no

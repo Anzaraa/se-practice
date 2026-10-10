@@ -128,9 +128,11 @@ critique is another claim to evaluate, not a verdict: reject what is wrong and s
 
 | # | Issue the AI raised | Element it cited | Verdict | Why |
 | --- | --- | --- | --- | --- |
-| 1 | <issue> | <element> | <accept / reject> | <your reason> |
-| 2 | <issue> | <element> | <accept / reject> | <your reason> |
-| 3 | <issue> | <element> | <accept / reject> | <your reason> |
+| 1 | Story source is still a placeholder | `approved-stories.md`, "Source of this set" line | accept | It was still `<...>`; set it to "the reference set", matching §1 |
+| 2 | Room note names only R3 as a reason for book() to reject | class diagram, Room note "R3: if isBlocked, book() is rejected" | accept | The activity diagram rejects on R1, R3 and R2; the class note now says book() also rejects on R1 and R2, so the two diagrams agree |
+| 3 | R2 should move from Booking to Room | class diagram, `note right of Booking` | reject | The lab convention (README §4) requires R2 in a note on Booking; a multiplicity cannot show it and the note is where it was placed on purpose |
+| 4 | Use case labels should show story IDs (US-0x) again | use-case diagram, e.g. `usecase "Book room"` | reject | IDs were removed on purpose so §7 can spell each use case exactly as in the diagram; tracing to stories is done in §7 |
+| 5 | Stories file has broken encoding | `approved-stories.md` title and Rules column | reject | The file is UTF-8 and shows — and § correctly in the editor; the garbled characters came from copying the text to the clipboard with `clip`, not from the file |
 
 ---
 
