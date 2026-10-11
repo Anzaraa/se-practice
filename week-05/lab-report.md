@@ -112,15 +112,17 @@ v1 is saved as `code/original/booking_v1.<ext>`, exactly as the assistant return
 
 | # | Line in v1 | AC it implements | Correct as written? If not, why |
 | --- | --- | --- | --- |
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
+| 1 | `if not (0 <= start < end <= 1440): return False` | AC1 (day bounds, start < end) | Yes — strict `<` rejects zero-length and reversed; `<= 1440` lets a booking end at midnight |
+| 2 | `if start <= now: return False` | AC1 (start > now) | Yes — exact negation of `start > now`; a booking starting at `now` is rejected |
+| 3 | `if end - start > 120: return False` | AC2 | Yes — 120 passes, 121 fails; duration is already ≥ 1 after row 1 |
+| 4 | `if blocked: return False` | AC3 | Yes |
+| 5 | `for booked_start, booked_end in existing:` / `if start < booked_end and booked_start < end: return False` | AC4 | Yes — strict `<` on both sides lets touching endpoints through; the loop checks every booking before True |
+| 6 | `return True` | AC5 | Yes — reached only after AC1–AC4; returns a bool literal; `existing` is only iterated, never changed |
 
 **Anything in v1 that no AC asks for** (extra validation, a buffer between bookings, logging,
 saving the booking, a different return type):
 
--
+- Nothing. No buffer, no sorting, no saving, no input validation, no exceptions — only docstrings and comments.
 
 ---
 
