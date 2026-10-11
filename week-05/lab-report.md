@@ -218,7 +218,33 @@ A test suite built from the boundary cases in the plan would confirm this review
 Paste the **complete** terminal output. For Python: everything `python -m unittest -v` printed.
 
 ```text
-(paste here)
+$ python -m unittest -v
+test_blocked_room_is_rejected (test_booking.BookingTests.test_blocked_room_is_rejected) ... ok
+test_conflict_with_a_later_booking_is_rejected (test_booking.BookingTests.test_conflict_with_a_later_booking_is_rejected) ... ok
+test_containing_existing_is_rejected (test_booking.BookingTests.test_containing_existing_is_rejected) ... ok
+test_empty_existing_is_allowed (test_booking.BookingTests.test_empty_existing_is_allowed) ... ok
+test_ending_after_midnight_is_rejected (test_booking.BookingTests.test_ending_after_midnight_is_rejected) ... ok
+test_ending_at_midnight_is_allowed (test_booking.BookingTests.test_ending_at_midnight_is_allowed) ... ok
+test_exact_gap_between_two_bookings_is_allowed (test_booking.BookingTests.test_exact_gap_between_two_bookings_is_allowed) ... ok
+test_exactly_two_hours_is_allowed (test_booking.BookingTests.test_exactly_two_hours_is_allowed) ... ok
+test_existing_unchanged_after_accepted_request (test_booking.BookingTests.test_existing_unchanged_after_accepted_request) ... ok
+test_existing_unchanged_after_rejected_request (test_booking.BookingTests.test_existing_unchanged_after_rejected_request) ... ok
+test_identical_interval_is_rejected (test_booking.BookingTests.test_identical_interval_is_rejected) ... ok
+test_inside_existing_is_rejected (test_booking.BookingTests.test_inside_existing_is_rejected) ... ok
+test_last_minute_of_the_day_is_allowed (test_booking.BookingTests.test_last_minute_of_the_day_is_allowed) ... ok
+test_one_minute_after_now_is_allowed (test_booking.BookingTests.test_one_minute_after_now_is_allowed) ... ok
+test_over_two_hours_is_rejected (test_booking.BookingTests.test_over_two_hours_is_rejected) ... ok
+test_partial_overlap_is_rejected (test_booking.BookingTests.test_partial_overlap_is_rejected) ... ok
+test_reversed_times_are_rejected (test_booking.BookingTests.test_reversed_times_are_rejected) ... ok
+test_starting_now_is_rejected (test_booking.BookingTests.test_starting_now_is_rejected) ... ok
+test_touching_end_is_allowed (test_booking.BookingTests.test_touching_end_is_allowed) ... ok
+test_touching_start_is_allowed (test_booking.BookingTests.test_touching_start_is_allowed) ... ok
+test_zero_length_is_rejected (test_booking.BookingTests.test_zero_length_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.002s
+
+OK
 ```
 
 ### 8.2 The checker, final run
@@ -227,7 +253,46 @@ Paste the **complete** output of `python tests/check_booking.py`. Paste it **las
 this file afterwards, run the checker again and paste again.
 
 ```text
-(paste here)
+python tests/check_booking.py
+Week 05 - can_book: the function, your tests, the evidence   (Path A)
+
+PASS   F1   the six cases from the task table           6 of 6 cases
+PASS   F2   AC1 time order and day bounds               5 of 5 cases
+PASS   F3   AC1 the start is in the future              5 of 5 cases
+PASS   F4   AC2 at most 120 minutes                     3 of 3 cases
+PASS   F5   AC3 a blocked room accepts nothing          2 of 2 cases
+PASS   F6   AC4 every kind of overlap is rejected       5 of 5 cases
+PASS   F7   AC4 touching endpoints are allowed          3 of 3 cases
+PASS   F8   AC4 every existing booking is checked       4 of 4 cases
+PASS   F9   AC5 the result is a real Boolean            3 of 3 cases
+PASS   F10  AC5 the inputs are left unchanged           2 of 2 cases
+PASS   O1   the assistant's first version is kept       v1 kept (32 lines)
+PASS   S1   your suite has at least 11 tests            21 tests
+PASS   S2   your suite is green on your own code        21 tests, OK
+PASS   M1   your tests catch a fault in AC1             caught by test_starting_now_is_rejected
+PASS   M2   your tests catch a fault in AC1             caught by test_ending_after_midnight_is_rejected
+PASS   M3   your tests catch a fault in AC1             caught by test_zero_length_is_rejected
+PASS   M4   your tests catch a fault in AC2             caught by test_exactly_two_hours_is_allowed
+PASS   M5   your tests catch a fault in AC3             caught by test_blocked_room_is_rejected
+PASS   M6   your tests catch a fault in AC4             caught by test_exact_gap_between_two_bookings_is_allowed, test_touching_end_is_allowed, test_touching_start_is_allowed
+PASS   M7   your tests catch a fault in AC4             caught by test_conflict_with_a_later_booking_is_rejected, test_existing_unchanged_after_rejected_request
+PASS   M8   your tests catch a fault in AC4             caught by test_containing_existing_is_rejected
+PASS   M9   your tests catch a fault in AC5             caught by test_existing_unchanged_after_accepted_request
+PASS   M10  your tests catch a fault in AC5             caught by test_existing_unchanged_after_accepted_request, test_existing_unchanged_after_rejected_request
+PASS   L1   report 1: tool, model and language          tool, model and language recorded
+PASS   L2   report 2: the plan, and what you corrected  plan pasted, 3 row(s) on what you corrected or verified
+PASS   L3   report 3: v1 mapped to AC1-AC4              6 conditions mapped, AC1-AC4 all present
+PASS   L4   report 4: at least 11 of your tests listed  22 tests listed
+PASS   L5   report 5: debugging evidence                1 row(s) of input / expected / actual
+PASS   L6   report 6: the critique, each point judged   critique pasted, 3 points judged
+PASS   L7   report 7: change log                        1 change-log row(s)
+PASS   L8   report 8.1: real output of your suite       suite output pasted
+PASS   L9   report 10: conclusion of 120-180 words      157 words
+------------------------------------------------------------------------------
+v1 (code/original/booking_v1.py): passes F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 - fails nothing - identical to your final: yes
+SUMMARY pass=32 fail=0 error=0   (32 checks)
+Behaviour and shape are clean. This says nothing about the quality of your review.
+
 ```
 
 ### 8.3 Path B only — three faults I planted myself
@@ -255,34 +320,27 @@ The same IDs as `known_fails` in `submission.yml`. Write `none` if the run is cl
 
 | Check | Why it stays |
 | --- | --- |
-| | |
+| none | The final checker run is clean: 32 PASS |
 
 ### 9.2 Outside the contract
 
 The contract says times are integers. It does not say what `can_book` does when one is not —
 `600.5`, or the string `"600"`. What does **your** function do, and why is that the right call?
 
--
+- can_book(600.5, 630, 540, False, []) returns True: Python compares a float with an int without complaint, so 600.5 passes every check like any other time. can_book('600', 630, 540, False, []) raises TypeError at line 13, on 0 <= start. I did not add a type check: the contract promises integers, and a loud crash on a string is safer than a silent guess.
 
 ### 9.3 A bound that never decides
 
 One of the bounds written in AC1 can never be the *only* reason a request is rejected. Which one,
 and why?
 
--
+- 0 <= start never rejects a request on its own. now is itself a valid time, so now >= 0, and any start < 0 already fails start <= now.
 
 ---
 
 ## 10. Conclusion (120–180 words)
+(a) The final code rejects a request when `start < booked_end and booked_start < end`. Intervals are half-open, so both comparisons are strict. If the request starts exactly where a booking ends, `start < booked_end` is false; if it ends where one begins, `booked_start < end` is false, so the request passes.
 
-<!-- Answer all three, in your own words, without the assistant:
-     (a) Explain the overlap condition in your final code — why those two comparisons, and why
-         they let touching bookings through.
-     (b) Which fault did your tests miss the longest, and what did the missing test have in common
-         with the ones you already had?
-     (c) What did you have to decide that neither the contract nor the assistant decided for you?
-     Worthless: "the AI made a mistake and I fixed it."
-     Worth everything: "F7 failed on can_book(570, 600, ...): v1 compared with <= on the start
-     side, so a booking that ends exactly when another begins was rejected." -->
+(b) No fault slipped through: the assistant's v1 passed F1–F10, is identical to my final code, and my suite caught all ten mutants in every recorded run. My last added test, test_last_minute_of_the_day_is_allowed, probes the day's upper bound, like test_ending_at_midnight_is_allowed.
 
-<!-- Write your conclusion below this line -->
+(c) The contract does not say what happens to non-integer times. can_book(600.5, ...) returns True; can_book('600', ...) raises TypeError at line 13. I added no type check: the contract promises integers, and a crash is safer than a silent guess. I also kept v1 unchanged, since it met every criterion.
