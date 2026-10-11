@@ -23,7 +23,61 @@
 **The assistant's plan, pasted unedited:**
 
 ```text
-(paste here)
+Implementation plan for can_book
+Checks in order
+
+The function returns False at the first failed check and returns True only if every check passes.
+
+AC1, time window: 0 <= start < end <= 1440. Reject reversed, zero-length, or out-of-day intervals.
+AC1, future start: start > now, a strict comparison.
+AC2, duration: end - start <= 120. Step 1 already guarantees the duration is at least 1.
+AC3, room status: blocked must be False.
+AC4, conflicts: for each (s, e) in existing, a conflict exists when start < e and s < end. With half-open intervals, this rule lets touching endpoints pass.
+AC5: return True. The function only reads existing. It never sorts, appends to, or removes from it.
+
+All criteria must hold, so the order doesn’t change the result. Putting the cheap scalar checks before the loop is just efficient.
+
+Assumptions
+start and end are integers, but their values may be invalid. Only now, blocked, and existing are guaranteed valid, and catching bad times is AC1’s job.
+end == 1440 is allowed, so a booking can end at midnight.
+existing may be empty. Its entries may be unsorted and may overlap each other. The overlap test doesn’t care about either.
+Each booking is checked against all existing bookings. Order and adjacency don’t matter.
+Because now >= 0, start = 0 can never satisfy start > now. A request starting at 0 is therefore always False, which is consistent with the rules.
+Boundary cases worth testing
+
+Unless stated otherwise, these use now = 500, blocked = False, and existing = [].
+
+Case	Input (start, end)	Expected	Bug it exposes
+Starts exactly now	(500, 560)	False	>= used instead of >
+Starts one minute after now	(501, 560)	True	Over-strict check
+Zero length	(600, 600)	False	<= used instead of <
+Reversed	(660, 600)	False	Missing order check, or negative duration passing AC2
+Ends at midnight	(1380, 1440)	True	end < 1440 used
+Past midnight	(1380, 1441)	False	Missing upper bound
+Negative start	(-10, 60) with now = 0	False	Missing lower bound, though AC1’s start > now also catches it
+Exactly 120 min	(600, 720)	True	< 120 used
+121 min	(600, 721)	False	Missing or loose duration check
+Blocked, otherwise valid	(600, 660), blocked = True	False	AC3 ignored
+
+These cases use existing = [(600, 660)]:
+
+Case	Input	Expected	Bug it exposes
+Touches the end	(660, 720)	True	<= in the overlap test
+Touches the start	(540, 600)	True	Same
+Overlaps by one minute at the end	(659, 700)	False	Off-by-one
+Overlaps by one minute at the start	(540, 601)	False	Off-by-one
+Identical interval	(600, 660)	False	Equality not treated as overlap
+Contains the existing booking	(590, 670)	False	Test only checks endpoints falling inside
+Inside the existing booking	(610, 620)	False	Same
+
+These cases use more than one existing booking:
+
+Case	Input	Expected	Bug it exposes
+Exact gap between two bookings	existing = [(600, 660), (720, 780)], (660, 720)	True	Over-strict overlap test
+Conflicts only with a later booking	existing = [(800, 860), (600, 660)], (630, 690)	False	Returning True after checking only the first booking, or assuming the list is sorted
+Inputs unchanged	Any call	existing equal to a copy taken before the call, same order	In-place sort() or other mutation, which violates AC5
+
+When you’re ready, the next step can be the code, the tests, or both.
 ```
 
 **What the plan invented or changed.** One row for every rule in the plan that is not in the
@@ -32,12 +86,22 @@ row saying which lines of the plan you checked against which AC.
 
 | # | What the plan said | What the contract or the AC says | What I did |
 | --- | --- | --- | --- |
-| 1 | | | |
+| 1 | Checks 1–5: `0 <= start < end <= 1440`, `start > now`, `end - start <= 120`, `blocked` is False, overlap `start < e and s < end`, return True | Each step maps to AC1 (1, 2), AC2 (3), AC3 (4), AC4 (5), AC5 (6). No gap between bookings, no sorting, no saving, no validation of `now`/`blocked`/`existing` | Checked every step against AC1–AC5: no invented rule found, nothing to drop |
+| 2 | Assumption: "existing may overlap each other" | The contract only says existing holds valid (start, end) tuples of active bookings; it says nothing about overlaps between them | Kept: it is an assumption, not a rule, and does not change the result — every booking is checked anyway |
+| 3 | Assumption: only `now`, `blocked`, `existing` are guaranteed valid; `start`/`end` may be out of range | Contract: "now is valid (0-1439)", "existing contains valid tuples"; nothing guarantees start/end | Agree — this is why AC1 must check start/end. Not an invention |
 
 **Boundary cases the assistant suggested that I kept as tests:**
 
--
-
+- Zero length (600, 600) → False (AC1)
+- Reversed (660, 600) → False (AC1)
+- Ends at midnight (1380, 1440) → True (AC1)
+- Past midnight (1380, 1441) → False (AC1)
+- Touches the start of the existing booking (540, 600) → True (AC4)
+- Contains the existing booking (590, 670) → False (AC4)
+- Inside the existing booking (610, 620) → False (AC4)
+- Exact gap between two bookings → True (AC4)
+- Conflicts only with a later, unsorted booking → False (AC4)
+- Inputs unchanged after the call (AC5)
 ---
 
 ## 3. Task 2 — the first version (v1), read before it was run
