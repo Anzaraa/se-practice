@@ -87,7 +87,7 @@ I learned that a source can confirm only half of a claim: the sources confirmed 
 
 - **Tool:** Claude
 - **Model:** Claude Opus 5.5
-- **Date:** 2026.10.11
+- **Date:** 2026-10-11
 - **Purpose:** contextual draft
 
 
@@ -162,7 +162,7 @@ If you’d like, I can turn this into a doc you can edit and export.
 
 - **Tool:** Claude
 - **Model:** Claude Opus 5.5
-- **Date:** 2026.10.11
+- **Date:** 2026-10-11
 - **Purpose:** critical review of the draft
 
 **Prompt:**
@@ -325,7 +325,7 @@ Highest priority to fix: #4 (software control), #1 and #2 (contradictions), and 
 
 - **Tool:** Claude
 - **Model:** Claude Opus 5.5
-- **Date:** 2026.10.11
+- **Date:** 2026-10-11
 - **Purpose:** revision using my decisions and verified evidence
 
 **Prompt:**
