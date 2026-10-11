@@ -131,19 +131,27 @@ saving the booking, a different return type):
 Base input for every row unless the row says otherwise: `now=540, blocked=False, existing=[(600, 660)]`.
 
 | # | Test name | Request (start, end) | What differs from the base input | Expected | AC | Result on v1 | Result on final |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | | | | | | | |
-| 2 | | | | | | | |
-| 3 | | | | | | | |
-| 4 | | | | | | | |
-| 5 | | | | | | | |
-| 6 | | | | | | | |
-| 7 | | | | | | | |
-| 8 | | | | | | | |
-| 9 | | | | | | | |
-| 10 | | | | | | | |
-| 11 | | | | | | | |
-
+| 1 | test_touching_end_is_allowed | (660, 720) | — | True | AC4 | pass | pass |
+| 2 | test_partial_overlap_is_rejected | (630, 690) | — | False | AC4 | pass | pass |
+| 3 | test_blocked_room_is_rejected | (660, 720) | blocked=True | False | AC3 | pass | pass |
+| 4 | test_exactly_two_hours_is_allowed | (720, 840) | — | True | AC2 | pass | pass |
+| 5 | test_over_two_hours_is_rejected | (720, 841) | — | False | AC2 | pass | pass |
+| 6 | test_starting_now_is_rejected | (540, 570) | — | False | AC1 start > now | pass | pass |
+| 7 | test_zero_length_is_rejected | (700, 700) | — | False | AC1 start < end | pass | pass |
+| 8 | test_reversed_times_are_rejected | (720, 700) | — | False | AC1 start < end | pass | pass |
+| 9 | test_one_minute_after_now_is_allowed | (541, 570) | — | True | AC1 start > now | pass | pass |
+| 10 | test_ending_at_midnight_is_allowed | (1380, 1440) | — | True | AC1 end <= 1440 | pass | pass |
+| 11 | test_ending_after_midnight_is_rejected | (1380, 1441) | — | False | AC1 end <= 1440 | pass | pass |
+| 12 | test_empty_existing_is_allowed | (630, 690) | existing=[] | True | AC4 | pass | pass |
+| 13 | test_exact_gap_between_two_bookings_is_allowed | (660, 720) | existing=[(600,660),(720,780)] | True | AC4 | pass | pass |
+| 14 | test_conflict_with_a_later_booking_is_rejected | (830, 880) | existing=[(600,660),(800,860)] | False | AC4 | pass | pass |
+| 15 | test_touching_start_is_allowed | (570, 600) | — | True | AC4 | pass | pass |
+| 16 | test_inside_existing_is_rejected | (615, 645) | — | False | AC4 | pass | pass |
+| 17 | test_containing_existing_is_rejected | (570, 690) | — | False | AC4 | pass | pass |
+| 18 | test_identical_interval_is_rejected | (600, 660) | — | False | AC4 | pass | pass |
+| 19 | test_existing_unchanged_after_accepted_request | (700, 760) | existing=[(800,860),(600,660)] | True, list unchanged | AC5 | pass | pass |
+| 20 | test_existing_unchanged_after_rejected_request | (630, 690) | existing=[(800,860),(600,660)] | False, list unchanged | AC5 | pass | pass |
+| 21 | test_last_minute_of_the_day_is_allowed | (1439, 1440) | — | True | AC1 end <= 1440 | pass | pass |
 ---
 
 ## 5. Task 4 — debugging with evidence
@@ -154,7 +162,7 @@ cause column says why no change was needed.
 
 | # | Input (the full call) | Expected | Actual | Cause (quote the line) | Fix | Who proposed the fix |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | | | | | | |
+| 1 | `can_book(1439, 1440, 540, False, [(600, 660)])` — new edge case, the last minute of the day | True | True | No defect: `if not (0 <= start < end <= 1440)` lets end = 1440 through and the duration 1 passes `end - start > 120`; no other line rejects it | None needed | — |
 
 **The debug prompt I sent, and the assistant's answer** (leave the block empty if you did not use it):
 
@@ -182,7 +190,7 @@ cause column says why no change was needed.
 
 | # | What changed (the line, before → after) | Why | Evidence: the test or check that moved |
 | --- | --- | --- | --- |
-| 1 | | | |
+| 1 | No change: `code/booking.py` is identical to `code/original/booking_v1.py` | v1 passed all 21 tests and F1–F10; every condition maps to AC1–AC5 (§3) | Checker: "v1 passes F1 … F10 - fails nothing - identical to your final: yes"; suite 21 tests OK |
 
 ---
 

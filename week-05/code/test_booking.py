@@ -91,6 +91,11 @@ class BookingTests(unittest.TestCase):
         self.assertIs(can_book(630, 690, NOW, False, existing), False)
         self.assertEqual(existing, before)
 
+     # ---- Task 4: new edge case ----...
+
+    def test_last_minute_of_the_day_is_allowed(self):  # AC1 end <= 1440, duration 1
+            self.assertIs(can_book(1439, 1440, NOW, False, [(600, 660)]), True)
+
 
 if __name__ == "__main__":
     unittest.main()
