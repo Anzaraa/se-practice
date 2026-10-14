@@ -73,22 +73,18 @@ v1). Leave empty if you did not need it:
 
 ## 4. Task 3 — the nine cases
 
-Base for every case unless the row says otherwise: **current time 09:00**, room **not blocked**,
-the room's **only booking 10:00–11:00**. The Expected column comes from AC1–AC6 — do not change it.
-Write each result exactly as **Available**, **Unavailable** or **Not testable** (the page gives you
-no way to set up the case). Save each final run as `evidence/final-T<n>.png`.
 
 | # | Case | What you set up and request | Expected | AC | Result on v1 | Result on final | Final screenshot |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Touching | 11:00–12:00 | Available | AC4 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T1.png |
-| T2 | Overlap | 10:30–11:30 | Unavailable | AC4 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T2.png |
-| T3 | Blocked | 11:00–12:00, room blocked | Unavailable | AC3 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T3.png |
-| T4 | Exactly 2 hours | 12:00–14:00 | Available | AC2 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T4.png |
-| T5 | Over 2 hours | 12:00–14:01 | Unavailable | AC2 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T5.png |
-| T6 | Starts now | 09:00–09:30 (current time 09:00) | Unavailable | AC1 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T6.png |
-| T7 | Reversed times | 12:00–11:00, and the page says why | Unavailable | AC1, AC6 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T7.png |
-| T8 | Same check twice | T1, then T1 again without reloading | Available | AC5 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T8.png |
-| T9 | Narrow screen | T1 at about 375 px wide | Available | AC6 | Available / Unavailable / Not testable | Available / Unavailable / Not testable | final-T9.png |
+| T1 | Touching | 11:00–12:00 | Available | AC4 | Not testable | Available / Unavailable / Not testable | final-T1.png |
+| T2 | Overlap | 10:30–11:30 | Unavailable | AC4 | Not testable | Available / Unavailable / Not testable | final-T2.png |
+| T3 | Blocked | 11:00–12:00, room blocked | Unavailable | AC3 | Not testable | Available / Unavailable / Not testable | final-T3.png |
+| T4 | Exactly 2 hours | 12:00–14:00 | Available | AC2 | Not testable | Available / Unavailable / Not testable | final-T4.png |
+| T5 | Over 2 hours | 12:00–14:01 | Unavailable | AC2 | Not testable | Available / Unavailable / Not testable | final-T5.png |
+| T6 | Starts now | 09:00–09:30 (current time 09:00) | Unavailable | AC1 | Not testable | Available / Unavailable / Not testable | final-T6.png |
+| T7 | Reversed times | 12:00–11:00, and the page says why | Unavailable | AC1, AC6 | Unavailable | Available / Unavailable / Not testable | final-T7.png |
+| T8 | Same check twice | T1, then T1 again without reloading | Available | AC5 | Not testable | Available / Unavailable / Not testable | final-T8.png |
+| T9 | Narrow screen | T1 at about 375 px wide | Available | AC6 | Not testable | Available / Unavailable / Not testable | final-T9.png |
 
 ---
 
@@ -99,10 +95,11 @@ functional and one usability or code-quality issue when you have them. If v1 pas
 log a justified cleanup that preserves behaviour. Save a screenshot of each as
 `evidence/issue-<n>.png`.
 
-| # | Issue | Evidence: steps → expected → observed | Priority | Decision |
+ # | Issue | Evidence: steps → expected → observed | Priority | Decision |
 | --- | --- | --- | --- | --- |
-| 1 | | | High / Medium / Low | Fix / Reject / Defer |
-| 2 | | | High / Medium / Low | Fix / Reject / Defer |
+| 1 | Functional: no way to supply the current time; v1 uses the device clock | Open the page at 16:05 → AC1 says the start must be after the *supplied* current time, so I must be able to set 09:00 → there is no input, the header shows the real clock (16:05), so T6 cannot be set up and every case before 16:05 is rejected | High | Fix |
+| 2 | Functional: the base case cannot be set up — no room has exactly one booking 10:00–11:00, and no room can be blocked or unblocked | Click every room and read its schedule → the nine cases need a room whose only booking is 10:00–11:00, and T3 needs that room blocked → Bexar Lab 310 has 09:30–11:00 and 13:00–14:30, no room has 10:00–11:00, and "Blocked" is fixed in `src/data.ts` (AC3, AC4) | High | Fix |
+| 3 | Usability: the reversed-times message is technical and does not say what is wrong | Allen Hall 101, Start 12:00, End 11:00 → AC6 asks for understandable feedback, e.g. "End time must be after start time" → page shows "Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00)." | Medium | Fix |
 
 ---
 
