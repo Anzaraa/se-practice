@@ -11,8 +11,8 @@
 | | |
 | --- | --- |
 | Tool | Bolt.new |
-| Exact model (as Bolt shows it, or `not displayed`) | |
-| Bolt project link (or `not shared`, and why) | |
+| Exact model (as Bolt shows it, or `not displayed`) | not displayed (Bolt Agent: Standard) |
+| Bolt project link (or `not shared`, and why) | https://bolt.new/~/sb1-andhqeqd?classId=b821ca27-77bc-49a8-8d38-127b962fe5c9&assignmentId=88814bc6-47f1-4ee7-9e88-e3d039bf07ea&submissionId=51bb44d4-906d-eeb1-de1f-517f65f74577 |
 | Browser and version | Google Chrome 155.0.8059.39 (64-bit) |
 | If you could not use Bolt.new: the tool you used instead, and why | none — Bolt.new was used |
 
@@ -44,12 +44,24 @@ prompt: yes / no
 **Bolt's list of the files/components it created, pasted unedited:**
 
 ```text
-(paste here)
-```
+Build and typecheck both pass. Here's what I created:
+
+Main files:
+
+src/types.ts — TypeScript interfaces for rooms, bookings, and the availability verdict.
+src/data.ts — Six fictional campus rooms (two blocked) with seven pre-existing bookings using minutes-from-midnight.
+src/availability.ts — The availability logic implementing all five acceptance criteria: interval validity (AC1), 120-minute max (AC2), blocked-room rejection (AC3), overlap detection with touching endpoints allowed (AC4), and a pure check that never mutates existing bookings (AC5).
+src/App.tsx — The one-page UI with room selection cards, start/end time inputs, a live Available/Unavailable result panel, and a schedule list for the selected room.
+How it works: Pick a room, set start and end times, and the page shows a green "Available" or red "Unavailable" result with specific reasons (blocked room, past start time, exceeding 120 min, or overlapping an existing booking). The layout uses a two-column grid on desktop that collapses to a single column on mobile. Touching endpoints (e.g., one booking ends 10:00, next starts 10:00) are allowed, and checking never changes the existing booking data.```
 
 **What v1 does — one line per thing that works, or visibly does not:**
 
--
+- Six fictional rooms as cards; two of them (Allen Hall 102, Cass Library Quiet Room) are permanently blocked in `src/data.ts` — there is no way to block or unblock a room in the page.
+- No room has exactly one booking 10:00–11:00, so the base setup of the nine cases cannot be built.
+- "Current time" is the real device clock (`new Date()` in `src/App.tsx`), fixed when the page loads; there is no input to supply it.
+- The verdict is live (no Check button): it recomputes when the room or times change and shows reasons when Unavailable.
+- The check in `src/availability.ts` is a pure function and does not change the bookings list (AC5 looks fine).
+- Time inputs are HH:MM and `parseTime` rejects 24:00, so an interval ending at 24:00 cannot be entered.
 
 **Repair prompt** (only if the first build did not run — the deck allows one, then the result is
 v1). Leave empty if you did not need it:
