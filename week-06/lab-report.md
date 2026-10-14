@@ -111,7 +111,20 @@ in) and Bolt's answer, unedited.
 **Functional fix prompt, as sent, and Bolt's answer:**
 
 ```text
-(paste here)
+PROMPT (fix_1, issue_1):
+In the current prototype, opening the page and looking for a way to set the current time to 09:00 produces no input for the current time — the page always uses the device clock (the header shows e.g. "Current time: 16:05"), so every start before the real time is rejected — but AC1 requires that the start is after the supplied current time, so the user must be able to enter the current time (e.g. 09:00) and then a request 09:00–09:30 is Unavailable while 11:00–12:00 is not rejected for being in the past. Make the smallest change that fixes this behavior. Preserve the other acceptance criteria. Explain which file/component you changed and why.
+
+
+BOLT'S answer:
+The problem is that `currentTime` is locked to the device clock with `useState<number>(nowMinutes())` and no setter. I'll make it an editable input so the user can supply the current time (e.g. 09:00), which AC1 requires.Build and typecheck pass.
+
+I changed only **`src/App.tsx`** — the file that renders the page and holds the page state. The fix:
+
+1. **Replaced the locked device-clock state** (`useState<number>(nowMinutes())` with no setter) with an editable `currentStr` state defaulting to the current device time, then derived `currentTime` from it via `parseTime`. The `verdict` memo already consumed `currentTime`, so the validation logic in `availability.ts` needed no changes.
+2. **Added a "Current time" input** above the start/end fields so the user can supply the current time (e.g. 09:00) instead of being stuck with the real clock.
+3. **Updated the header and info note** to stop displaying the device clock and instead tell the user to set the current time themselves.
+
+All other acceptance criteria are preserved — the availability logic (AC2–AC5) is untouched, and AC1 now works as intended: with current time set to 09:00, a request of 09:00–09:30 is rejected (start is not *after* current time), while 11:00–12:00 is no longer rejected for being in the past.
 ```
 
 **Cleanup prompt, as sent, and Bolt's answer:**
@@ -127,8 +140,9 @@ the AC (or the scope) that justifies it.
 
 | # | What Bolt changed or suggested | accept / reject | Reason — cite the AC or the scope | Retest: which cases, result |
 | --- | --- | --- | --- | --- |
-| 1 | | accept / reject | | |
-| 2 | | accept / reject | | |
+| 1 | Fix 1: replaced the locked device-clock state with an editable "Current time" input in `src/App.tsx`; `currentTime` is now parsed from it | accept | AC1 says the start must be after the *supplied* current time — the user now supplies it; no booking data, storage or new features added (scope kept) | Bexar Lab 220, now 09:00: 09:00–09:30 → Unavailable ("Start time must be after the current time"), 09:30–10:00 → Available; T7 → Unavailable; T1–T6, T8, T9 still Not testable (no room with only 10:00–11:00, no way to block — issue 2) |
+| 2 | Fix 1: the "Current time" input defaults to the device clock when the page opens | accept | Harmless default; AC1 only needs the time to be suppliable, and the user can overwrite it with 09:00 before checking | same retest as row 1 |
+| 3 | Fix 1: header and info note now say "set the current time" instead of showing the device clock | accept | AC6 — clearer feedback about which "now" is used | visual check: header and note updated, no layout break |
 
 ---
 
@@ -138,8 +152,7 @@ Two to four concrete changes, each one retested.
 
 | # | Issue | Decision | Change (file or component) | Result after retest |
 | --- | --- | --- | --- | --- |
-| 1 | | | | |
-| 2 | | | | |
+| 1 | Issue 1 — no way to supply the current time (AC1, T6) | Fix | `src/App.tsx`: editable "Current time" input replaces the device-clock state | now 09:00: 09:00–09:30 → Unavailable, 09:30–10:00 → Available; T7 still Unavailable; other cases wait for issue 2 |
 
 ---
 
