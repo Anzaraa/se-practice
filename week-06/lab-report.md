@@ -127,6 +127,30 @@ I changed only **`src/App.tsx`** — the file that renders the page and holds th
 All other acceptance criteria are preserved — the availability logic (AC2–AC5) is untouched, and AC1 now works as intended: with current time set to 09:00, a request of 09:00–09:30 is rejected (start is not *after* current time), while 11:00–12:00 is no longer rejected for being in the past.
 ```
 
+**Functional fix prompt 2 (issue 2), as sent, and Bolt's answer:**
+
+```text
+PROMPT (fix 2, issue 2):
+In the current prototype, clicking every room and reading its schedule produces no room whose only booking is 10:00–11:00, and the "Blocked" status is fixed in `src/data.ts` with no way to block or unblock the selected room in the page, but AC3 and AC4 require that I can check a room whose only booking is 10:00–11:00 both when it is not blocked (11:00–12:00 → Available, 10:30–11:30 → Unavailable) and when it is blocked (11:00–12:00 → Unavailable). Make the smallest change that fixes this behavior. Preserve the other acceptance criteria. Explain which file/component you changed and why.
+
+BOLT'S ANSWER:
+Let me read the current state of the files I need to change.
+Two issues to fix:
+
+1. No room has a single booking of 10:00–11:00. I'll add a room "Drew Hall 105" with exactly one booking at 10:00–11:00 so AC4 can be exercised both ways (11:00–12:00 touches the endpoint → Available; 10:30–11:30 overlaps → Unavailable).
+2. Blocked status is fixed in `data.ts` with no UI to toggle it. I'll lift rooms into React state in `App.tsx` and add a block/unblock toggle button on each room card, so the user can block the selected room and see AC3 reject 11:00–12:00.
+
+Now I'll update `App.tsx` to lift rooms into state and add a block/unblock toggle on the room cards.
+Build and typecheck both pass. Here's what I changed and why:
+`src/data.ts` — Added a seventh room, "Drew Hall 105", with exactly one booking: 10:00–11:00 (Morning Lecture). This gives you the specific scenario AC4 requires: with current time set before 11:00, requesting 11:00–12:00 (touching endpoint) → Available, while 10:30–11:30 (overlapping) → Unavailable.
+`src/App.tsx` — Two changes:
+
+1. Lifted rooms into React state (`useState<Room[]>(INITIAL_ROOMS)`) instead of reading the static array directly, so the blocked status can change at runtime. The availability check now uses this state instead of the hardcoded array.
+2. Added a block/unblock toggle — each room card now has a clickable badge (where it shows "Blocked" or "20 seats"). Clicking it flips that room's blocked status. The room name area is a separate button for selecting the room. So you can select "Drew Hall 105", confirm 11:00–12:00 is Available, then click the badge to block it and see the same 11:00–12:00 become Unavailable — exercising AC3.
+
+All other criteria remain intact: the validation logic in `availability.ts` is untouched, AC1/AC2/AC5 still work the same way, and no booking data is ever modified.
+```
+
 **Cleanup prompt, as sent, and Bolt's answer:**
 
 ```text
@@ -153,6 +177,7 @@ Two to four concrete changes, each one retested.
 | # | Issue | Decision | Change (file or component) | Result after retest |
 | --- | --- | --- | --- | --- |
 | 1 | Issue 1 — no way to supply the current time (AC1, T6) | Fix | `src/App.tsx`: editable "Current time" input replaces the device-clock state | now 09:00: 09:00–09:30 → Unavailable, 09:30–10:00 → Available; T7 still Unavailable; other cases wait for issue 2 |
+| 2 | Issue 2 — no room with only 10:00–11:00, no way to block (AC3, AC4) | Fix | `src/data.ts`: new room Drew Hall 105 (10:00–11:00); `src/App.tsx`: block/unblock toggle on room cards | T1 Available, T2 Unavailable, T3 Unavailable, T4 Available, T5 Unavailable, T6 Unavailable, T7 Unavailable (message still technical), T8 Available |
 
 ---
 
