@@ -1,0 +1,55 @@
+# week-06/submission.yml — your declaration for this lab.
+#
+# Facts only. Every explanation goes in lab-report.md; nothing here repeats prose.
+# Fill every value. Check it before you push:
+#
+#     python tests/validate_submission.py
+#
+# The validator checks shape, never quality. A green run is the floor, not the grade.
+# If you cannot run Python, fill the file by hand against the comments — a malformed
+# file costs you nothing if the content is there.
+
+schema: 1
+week: "06"
+
+student:
+  name: Anzara Nurbek
+  student_id:         24B031941
+  github:              Anzaraa
+
+assistant:
+  tool:              Bolt.new
+  model:            not displayed
+  fallback_reason:     none
+
+bolt:
+  project_url:        https://bolt.new/~/sb1-andhqeqd
+
+counts:
+  issues:             4
+  cleanup_prompts:     4
+  change_log_rows:     4
+  v1_matches:        1
+  final_matches:      9
+checker:
+  
+  pass: 27
+  fail: 0
+  error: 0 
+  commit:  b1c984e       
+  known_fails: []     
+
+assumptions:
+  end_of_day:         not-expressible
+review_findings:
+  - "T6: v1 used the device clock (new Date() in src/App.tsx) with no input, so the supplied current time of AC1 could not be set; fix 1 added a Current time input"
+  - "T1-T5, T8, T9: v1 had no room whose only booking is 10:00-11:00 and no way to block a room (AC3, AC4); fix 2 added Drew Hall 105 in src/data.ts and a block toggle"
+  - "T7: v1 said 'Interval must satisfy 0 <= start < end <= 1440 minutes' (AC6); the cleanup in src/availability.ts now says 'Start time must be earlier than end time.'"
+  - "v1 package.json listed @supabase/supabase-js although nothing used it; removed as out of scope (no backend)"
+
+
+honesty:
+  v1_export_unedited:                yes
+  screenshots_unedited:              yes
+  can_explain_component_without_ai:  yes
+  ai_usage_disclosed:               yes

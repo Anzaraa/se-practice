@@ -1,0 +1,303 @@
+# Week 06 — Lab report
+
+**Name:** Anzara Nurbek
+**Group:** SE-Monday, 16:00-19:00
+**Date:** 2026-10-14
+
+---
+
+## 1. Setup
+
+| | |
+| --- | --- |
+| Tool | Bolt.new |
+| Exact model (as Bolt shows it, or `not displayed`) | not displayed (Bolt Agent: Standard) |
+| Bolt project link (or `not shared`, and why) | https://bolt.new/~/sb1-andhqeqd?classId=b821ca27-77bc-49a8-8d38-127b962fe5c9&assignmentId=88814bc6-47f1-4ee7-9e88-e3d039bf07ea&submissionId=51bb44d4-906d-eeb1-de1f-517f65f74577 |
+| Browser and version | Google Chrome 155.0.8059.39 (64-bit) |
+| If you could not use Bolt.new: the tool you used instead, and why | none — Bolt.new was used |
+
+---
+
+## 2. Task 1 — define before generating
+
+**Two predictions, written BEFORE you send the first prompt.** Where do you expect v1 to go wrong?
+Fill the first three columns now; fill the last one after Task 3.
+
+| # | What I expect to go wrong | AC it concerns | Was I right? (after Task 3) |
+| --- | --- | --- | --- |
+| 1 | The page will have no input for the current time and will use the real clock, so T6 cannot be tested | AC1 | |
+| 2 | Pressing Check will add the request to the bookings, so the same check a second time says Unavailable (T8) | AC5 | |
+
+**The initial prompt exactly as I sent it** — the deck's prompt with AC1–AC6 pasted in place of
+`[paste AC1–AC6]`, nothing else changed:
+
+```text
+Build a small responsive Smart Campus Room Availability Checker. Requirements: AC1: Accept a candidate interval only when 0 ≤ start < end ≤ 1440 and start is after the supplied current time. AC2: Reject a booking longer than 120 minutes. AC3: Reject the request when the selected room is blocked. AC4: Reject any interval that overlaps an existing booking; touching endpoints are allowed. AC5: Show a clear Available / Unavailable decision without changing the existing booking data. AC6: The page remains usable at desktop and narrow/mobile width and gives understandable validation feedback. Use fictional sample data only. Keep the implementation simple and within one-page scope. Do not add authentication, backend services, analytics, or unrelated features. After building, briefly list the main files/components you created.```
+
+---
+
+## 3. Task 2 — prototype v1
+
+v1 export saved in `original/` and screenshot saved as `evidence/v1.png` **before** any cleanup
+prompt: yes / no
+
+**Bolt's list of the files/components it created, pasted unedited:**
+
+```text
+Build and typecheck both pass. Here's what I created:
+
+Main files:
+
+src/types.ts — TypeScript interfaces for rooms, bookings, and the availability verdict.
+src/data.ts — Six fictional campus rooms (two blocked) with seven pre-existing bookings using minutes-from-midnight.
+src/availability.ts — The availability logic implementing all five acceptance criteria: interval validity (AC1), 120-minute max (AC2), blocked-room rejection (AC3), overlap detection with touching endpoints allowed (AC4), and a pure check that never mutates existing bookings (AC5).
+src/App.tsx — The one-page UI with room selection cards, start/end time inputs, a live Available/Unavailable result panel, and a schedule list for the selected room.
+How it works: Pick a room, set start and end times, and the page shows a green "Available" or red "Unavailable" result with specific reasons (blocked room, past start time, exceeding 120 min, or overlapping an existing booking). The layout uses a two-column grid on desktop that collapses to a single column on mobile. Touching endpoints (e.g., one booking ends 10:00, next starts 10:00) are allowed, and checking never changes the existing booking data.```
+
+**What v1 does — one line per thing that works, or visibly does not:**
+
+- Six fictional rooms as cards; two of them (Allen Hall 102, Cass Library Quiet Room) are permanently blocked in `src/data.ts` — there is no way to block or unblock a room in the page.
+- No room has exactly one booking 10:00–11:00, so the base setup of the nine cases cannot be built.
+- "Current time" is the real device clock (`new Date()` in `src/App.tsx`), fixed when the page loads; there is no input to supply it.
+- The verdict is live (no Check button): it recomputes when the room or times change and shows reasons when Unavailable.
+- The check in `src/availability.ts` is a pure function and does not change the bookings list (AC5 looks fine).
+- Time inputs are HH:MM and `parseTime` rejects 24:00, so an interval ending at 24:00 cannot be entered.
+
+**Repair prompt** (only if the first build did not run — the deck allows one, then the result is
+v1). Leave empty if you did not need it:
+
+```text
+```
+
+---
+
+## 4. Task 3 — the nine cases
+
+
+| # | Case | What you set up and request | Expected | AC | Result on v1 | Result on final | Final screenshot |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | Touching | 11:00–12:00 | Available | AC4 | Not testable | Available | final-T1.png |
+| T2 | Overlap | 10:30–11:30 | Unavailable | AC4 | Not testable | Unavailable | final-T2.png |
+| T3 | Blocked | 11:00–12:00, room blocked | Unavailable | AC3 | Not testable | Unavailable | final-T3.png |
+| T4 | Exactly 2 hours | 12:00–14:00 | Available | AC2 | Not testable | Available | final-T4.png |
+| T5 | Over 2 hours | 12:00–14:01 | Unavailable | AC2 | Not testable | Unavailable | final-T5.png |
+| T6 | Starts now | 09:00–09:30 (current time 09:00) | Unavailable | AC1 | Not testable | Unavailable | final-T6.png |
+| T7 | Reversed times | 12:00–11:00, and the page says why | Unavailable | AC1, AC6 | Unavailable | Unavailable | final-T7.png |
+| T8 | Same check twice | T1, then T1 again without reloading | Available | AC5 | Not testable | Available | final-T8.png |
+| T9 | Narrow screen | T1 at about 375 px wide | Available | AC6 | Not testable | Available | final-T9.png |
+---
+
+## 5. Issue log — cleanup targets
+
+One row per issue you chose to act on (or deliberately not act on). At least **two**: one
+functional and one usability or code-quality issue when you have them. If v1 passed every case,
+log a justified cleanup that preserves behaviour. Save a screenshot of each as
+`evidence/issue-<n>.png`.
+
+ # | Issue | Evidence: steps → expected → observed | Priority | Decision |
+| --- | --- | --- | --- | --- |
+| 1 | Functional: no way to supply the current time; v1 uses the device clock | Open the page at 16:05 → AC1 says the start must be after the *supplied* current time, so I must be able to set 09:00 → there is no input, the header shows the real clock (16:05), so T6 cannot be set up and every case before 16:05 is rejected | High | Fix |
+| 2 | Functional: the base case cannot be set up — no room has exactly one booking 10:00–11:00, and no room can be blocked or unblocked | Click every room and read its schedule → the nine cases need a room whose only booking is 10:00–11:00, and T3 needs that room blocked → Bexar Lab 310 has 09:30–11:00 and 13:00–14:30, no room has 10:00–11:00, and "Blocked" is fixed in `src/data.ts` (AC3, AC4) | High | Fix |
+| 3 | Usability: the reversed-times message is technical and does not say what is wrong | Allen Hall 101, Start 12:00, End 11:00 → AC6 asks for understandable feedback, e.g. "End time must be after start time" → page shows "Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00)." | Medium | Fix |
+| 4 | Scope: `package.json` lists `@supabase/supabase-js` (a backend/database client) although no file uses it | Run `python tests/check_prototype.py` on the first final export → the scope says no backend or database (P3 must pass) → P3 FAIL: "backend or database - e.g. prototype/project/package.json:14" | Medium | Fix |
+
+---
+
+## 6. Task 4 — cleanup with focused prompts
+
+One issue per prompt. Paste every prompt **as sent** (every `[bracketed field]` and `AC#` filled
+in) and Bolt's answer, unedited.
+
+**Functional fix prompt, as sent, and Bolt's answer:**
+
+```text
+PROMPT (fix_1, issue_1):
+In the current prototype, opening the page and looking for a way to set the current time to 09:00 produces no input for the current time — the page always uses the device clock (the header shows e.g. "Current time: 16:05"), so every start before the real time is rejected — but AC1 requires that the start is after the supplied current time, so the user must be able to enter the current time (e.g. 09:00) and then a request 09:00–09:30 is Unavailable while 11:00–12:00 is not rejected for being in the past. Make the smallest change that fixes this behavior. Preserve the other acceptance criteria. Explain which file/component you changed and why.
+
+
+BOLT'S answer:
+The problem is that `currentTime` is locked to the device clock with `useState<number>(nowMinutes())` and no setter. I'll make it an editable input so the user can supply the current time (e.g. 09:00), which AC1 requires.Build and typecheck pass.
+
+I changed only **`src/App.tsx`** — the file that renders the page and holds the page state. The fix:
+
+1. **Replaced the locked device-clock state** (`useState<number>(nowMinutes())` with no setter) with an editable `currentStr` state defaulting to the current device time, then derived `currentTime` from it via `parseTime`. The `verdict` memo already consumed `currentTime`, so the validation logic in `availability.ts` needed no changes.
+2. **Added a "Current time" input** above the start/end fields so the user can supply the current time (e.g. 09:00) instead of being stuck with the real clock.
+3. **Updated the header and info note** to stop displaying the device clock and instead tell the user to set the current time themselves.
+
+All other acceptance criteria are preserved — the availability logic (AC2–AC5) is untouched, and AC1 now works as intended: with current time set to 09:00, a request of 09:00–09:30 is rejected (start is not *after* current time), while 11:00–12:00 is no longer rejected for being in the past.
+```
+
+**Functional fix prompt 2 (issue 2), as sent, and Bolt's answer:**
+
+```text
+PROMPT (fix 2, issue 2):
+In the current prototype, clicking every room and reading its schedule produces no room whose only booking is 10:00–11:00, and the "Blocked" status is fixed in `src/data.ts` with no way to block or unblock the selected room in the page, but AC3 and AC4 require that I can check a room whose only booking is 10:00–11:00 both when it is not blocked (11:00–12:00 → Available, 10:30–11:30 → Unavailable) and when it is blocked (11:00–12:00 → Unavailable). Make the smallest change that fixes this behavior. Preserve the other acceptance criteria. Explain which file/component you changed and why.
+
+BOLT'S ANSWER:
+Let me read the current state of the files I need to change.
+Two issues to fix:
+
+1. No room has a single booking of 10:00–11:00. I'll add a room "Drew Hall 105" with exactly one booking at 10:00–11:00 so AC4 can be exercised both ways (11:00–12:00 touches the endpoint → Available; 10:30–11:30 overlaps → Unavailable).
+2. Blocked status is fixed in `data.ts` with no UI to toggle it. I'll lift rooms into React state in `App.tsx` and add a block/unblock toggle button on each room card, so the user can block the selected room and see AC3 reject 11:00–12:00.
+
+Now I'll update `App.tsx` to lift rooms into state and add a block/unblock toggle on the room cards.
+Build and typecheck both pass. Here's what I changed and why:
+`src/data.ts` — Added a seventh room, "Drew Hall 105", with exactly one booking: 10:00–11:00 (Morning Lecture). This gives you the specific scenario AC4 requires: with current time set before 11:00, requesting 11:00–12:00 (touching endpoint) → Available, while 10:30–11:30 (overlapping) → Unavailable.
+`src/App.tsx` — Two changes:
+
+1. Lifted rooms into React state (`useState<Room[]>(INITIAL_ROOMS)`) instead of reading the static array directly, so the blocked status can change at runtime. The availability check now uses this state instead of the hardcoded array.
+2. Added a block/unblock toggle — each room card now has a clickable badge (where it shows "Blocked" or "20 seats"). Clicking it flips that room's blocked status. The room name area is a separate button for selecting the room. So you can select "Drew Hall 105", confirm 11:00–12:00 is Available, then click the badge to block it and see the same 11:00–12:00 become Unavailable — exercising AC3.
+
+All other criteria remain intact: the validation logic in `availability.ts` is untouched, AC1/AC2/AC5 still work the same way, and no booking data is ever modified.
+```
+
+**Cleanup prompt, as sent, and Bolt's answer:**
+
+```text
+PROMPT (cleanup, issue 3):
+Review only the validation messages in `src/availability.ts` that are shown in the Result panel — in particular the message for reversed times (Start 12:00, End 11:00 shows "Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00).") for unnecessary duplication, confusing naming, or UI feedback problems. Suggest one small cleanup. Do not add features or redesign the whole application. Implement it only if it preserves AC1–AC6.
+
+BOLT'S ANSWER:
+The issue I see: when times are reversed (start 12:00, end 11:00), the message says "Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00)." — this is a confusing message for a non-developer. It exposes the internal minutes representation ("1440 minutes") alongside a clock format ("00:00 to 24:00"), mixes mathematical notation with UI text, and bundles three distinct failure modes (negative start, reversed times, end past midnight) into one line so the user can't tell which one they hit.
+Suggested cleanup: Split that single condition into user-friendly messages in clock terms, and only report the one that actually applies. This preserves AC1 (same rejection logic) and AC6 (clearer feedback).
+Build and typecheck pass.
+What changed: In `src/availability.ts`, I split the single bundled message `"Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00)."` into three separate, plain-language checks that fire independently:
+
+* "End time cannot be later than 24:00." — when end exceeds the day boundary.
+* "Start time must be earlier than end time." — when start ≥ end (reversed or equal times).
+* "Start time must be after the current time." — unchanged, already clear.
+
+So a user who enters Start 12:00 / End 11:00 now sees "Start time must be earlier than end time." instead of a math expression referencing "1440 minutes." Each failure mode gets its own specific message, all in clock terms a non-developer understands. The rejection logic is identical — AC1 still rejects the same intervals, and the other criteria are untouched.
+```
+**Cleanup prompt 2 (scope), as sent, and Bolt's answer:**
+
+```text
+PROMPT (cleanup 2, scope):
+Review only the dependencies in `package.json` — in particular `@supabase/supabase-js`, which no file in `src/` imports, while the scope says no backend or database — for unnecessary duplication, confusing naming, or UI feedback problems. Suggest one small cleanup. Do not add features or redesign the whole application. Implement it only if it preserves AC1–AC6.
+
+BOLT'S ANSWER (Bolt's UI displays "supabase" as "Bolt Database"; pasted as shown):
+Let me verify that `@supabase/Bolt Database-js` is truly unused across the source.
+Searched `supabase`
+No file in `src/` references Bolt Database at all. The original task scope explicitly says "no authentication, backend services, analytics, or unrelated features," and all data is fictional in-memory sample data. So `@supabase/Bolt Database-js` is an unused dependency — it adds bundle weight and misleads anyone reading `package.json` into thinking there's a backend.
+Suggested cleanup: Remove `@supabase/Bolt Database-js` from dependencies. Let me verify nothing else in the project references it.
+Confirmed — `@supabase/Bolt Database-js` is not referenced anywhere in the project. Removing it.
+Build, typecheck, and dependency reinstall all pass. Removing `@supabase/Bolt Database-js` dropped 13 packages and had no effect on the build output or bundle.
+What changed: Removed `@supabase/Bolt Database-js` from the `dependencies` in `package.json`. No file in `src/` imported it, and the task scope explicitly requires no backend or database — the app uses fictional in-memory sample data only. Leaving the dependency in created a misleading impression that the project connects to a backend, and it pulled in unnecessary packages. AC1–AC6 are all preserved since the removal touches no application logic.
+```
+Add further blocks for further prompts.
+
+**Every change or suggestion Bolt made, judged.** Accepting is a decision; so is rejecting. Cite
+the AC (or the scope) that justifies it.
+
+| # | What Bolt changed or suggested | accept / reject | Reason — cite the AC or the scope | Retest: which cases, result |
+| --- | --- | --- | --- | --- |
+| 1 | Fix 1: replaced the locked device-clock state with an editable "Current time" input in `src/App.tsx`; `currentTime` is now parsed from it | accept | AC1 says the start must be after the *supplied* current time — the user now supplies it; no booking data, storage or new features added (scope kept) | Bexar Lab 220, now 09:00: 09:00–09:30 → Unavailable ("Start time must be after the current time"), 09:30–10:00 → Available; T7 → Unavailable; T1–T6, T8, T9 still Not testable (no room with only 10:00–11:00, no way to block — issue 2) |
+| 2 | Fix 1: the "Current time" input defaults to the device clock when the page opens | accept | Harmless default; AC1 only needs the time to be suppliable, and the user can overwrite it with 09:00 before checking | same retest as row 1 |
+| 3 | Fix 1: header and info note now say "set the current time" instead of showing the device clock | accept | AC6 — clearer feedback about which "now" is used | visual check: header and note updated, no layout break |
+| 4 | Fix 2: added room "Drew Hall 105" in `src/data.ts` with exactly one booking 10:00–11:00 (fictional) | accept | AC4 — gives the base case of the nine cases; fictional sample data only, existing bookings unchanged (scope kept) | Drew Hall 105, now 09:00: T1 11:00–12:00 → Available, T2 10:30–11:30 → Unavailable (overlaps 10:00–11:00) |
+| 5 | Fix 2: rooms lifted into React state in `src/App.tsx` + a block/unblock toggle on each room card | accept | AC3 — I must be able to block the selected room; it changes only the room's `blocked` flag in memory, never `BOOKINGS` (AC5), no storage (scope) | T3 Drew Hall 105 blocked, 11:00–12:00 → Unavailable ("is currently blocked"); then all nine: T4 Available, T5 Unavailable, T6 Unavailable, T7 Unavailable, T8 Available twice |
+| 6 | Fix 2: the toggle is placed on the "20 seats" badge | accept with a note | Works for AC3, but it is not obvious that the seats badge is a button (AC6 usability); kept because changing it would need one more prompt and it does not break any case | visual check only |
+| 7 | Cleanup: split the bundled message in `src/availability.ts` into plain messages; reversed times now say "Start time must be earlier than end time." | accept | AC6 — understandable validation feedback; rejection logic unchanged so AC1 still holds; no new features (scope) | T7 Drew Hall 105, now 09:00, 12:00–11:00 → Unavailable with the new message; T1 Available, T5 Unavailable, T6 Unavailable — no regression |
+| 8 | Cleanup: new message "End time cannot be later than 24:00." | accept with a note | Harmless and correct for AC1, but the time inputs stop at 23:59, so a user cannot actually reach it (see §9.2) | not reachable from the page |
+| 9 | Cleanup 2: removed the unused `@supabase/supabase-js` dependency from `package.json` (Bolt's template added it in v1) | accept | Scope — "no login, backend, database"; nothing in `src/` imported it, so no AC is affected; the provided checker (P3) flags it as a backend | T1 Available, T7 Unavailable after the change; app logic untouched |
+---
+
+## 7. Change log — v1 to final
+
+Two to four concrete changes, each one retested.
+
+| # | Issue | Decision | Change (file or component) | Result after retest |
+| --- | --- | --- | --- | --- |
+| 1 | Issue 1 — no way to supply the current time (AC1, T6) | Fix | `src/App.tsx`: editable "Current time" input replaces the device-clock state | now 09:00: 09:00–09:30 → Unavailable, 09:30–10:00 → Available; T7 still Unavailable; other cases wait for issue 2 |
+| 2 | Issue 2 — no room with only 10:00–11:00, no way to block (AC3, AC4) | Fix | `src/data.ts`: new room Drew Hall 105 (10:00–11:00); `src/App.tsx`: block/unblock toggle on room cards | T1 Available, T2 Unavailable, T3 Unavailable, T4 Available, T5 Unavailable, T6 Unavailable, T7 Unavailable (message still technical), T8 Available |
+| 3 | Issue 3 — reversed-times message is technical (AC6, T7) | Fix | `src/availability.ts`: plain-language messages instead of "0 ≤ start < end ≤ 1440 minutes" | T7 → Unavailable, "Start time must be earlier than end time."; T1, T5, T6 unchanged |
+| 4 | Issue 4 — unused backend dependency (scope, P3) | Fix | `package.json`: removed `@supabase/supabase-js` | T1 Available, T7 Unavailable; checker P3 to be confirmed on the final export |
+
+---
+
+## 8. One generated component, in my own words
+
+Pick one file or component Bolt generated that matters for AC1–AC5 — the one that decides
+availability is the best choice. Name its path in backticks, then explain in your own words, without
+the assistant, what it does and how it decides. 60 words or more.
+
+**File:** `src/availability.ts`
+
+This file decides if a room can be booked. The main function is checkAvailability. You give it the room, the start and end time (in minutes from midnight), the current time, and the lists of rooms and bookings. It answers “available” or “unavailable”. If the answer is “unavailable”, it also says why. It checks all the rules first, so the user sees every problem at once, not just the first one.
+
+Here are the rules it checks:
+
+AC1: Start and end must be real times. The end can’t be later than 24:00. The start must be before the end, and it must be later than the current time.
+AC2: A booking can’t be longer than 2 hours (120 minutes).
+AC3: The room must exist and must not be blocked.
+AC4: The booking can’t overlap another booking in the same room. The check is start < b.end && end > b.start. It uses < and not <= so that bookings can touch. For example, if one booking ends at 11:00 and a new one starts at 11:00, then 11:00 < 11:00 is false, so there is no conflict.
+AC5: The function only reads the data. It never changes the bookings list.
+
+One small problem: there is no separate check for start ≥ 0 (it was in v1, but the cleanup in fix 3 dropped it). In the app this cannot happen, because parseTime never returns a negative number. If checkAvailability is called directly with a negative start, it is still rejected by the current-time rule, but with the wrong reason; only when the current time is missing would a negative start pass AC1.
+
+---
+
+## 9. What still fails, and what the criteria do not say
+
+### 9.1 Checks I am keeping as FAIL or ERROR
+
+The same IDs as `known_fails` in `submission.yml`. Write `none` if the run is clean.
+
+| Check | Why it stays |
+| --- | --- |
+| none | The last checker run gives 27 PASS, 0 FAIL, 0 ERROR |
+
+### 9.2 The end of the day
+
+AC1 allows `end ≤ 1440` — a booking may end at 24:00. Can a user of your final page ask for
+23:00–24:00? How — and if not, why is that acceptable or not? (This is the value you declare in
+`submission.yml` under `assumptions.end_of_day`.)
+
+No. A user of the final page cannot book 23:00–24:00.
+
+The page uses `<input type="time">` for all three time fields (`src/App.tsx`). This input only
+goes up to 23:59 and shows midnight as "00:00". If the user picks 00:00 as the end time,
+`parseTime` turns it into 0, and the booking fails because the start is not before the end.
+Typing "24:00" is not possible either, and `parseTime` would reject it anyway, because it only
+accepts hours from 0 to 23.
+
+So the latest end a user can choose is 23:59. `checkAvailability` itself accepts `end = 1440`,
+but the page can never send that value.
+
+This is acceptable in practice: the user loses only the last minute of the day, and nothing
+wrong can get through. It is still a gap against AC1, because AC1 says a booking may end at
+24:00, so I declare it in `submission.yml` as `assumptions.end_of_day: not-expressible`.
+
+### 9.3 Which "now"?
+
+AC1 says "after the supplied current time". What did **v1** use as the current time, and what did
+that mean for testing case T6?
+
+-v1 read the real clock from the browser (new Date() in src/App.tsx), fixed it when the page
+loaded, showed it in the header  and used it in the check. There was no
+field to change it. Because of this, every request that started before 16:05 was rejected.
+
+The expected result for T6 does not change: by AC1 it is Unavailable (see §4). What changed was
+the page's result. It depended on when I opened the page, not only on the input, so I could not
+reproduce the case. T6 was Not testable on v1: I could not set the current time to 09:00.
+
+After my fix prompt (fix 1), Bolt added a third <input type="time"> for the current time. Now
+the tester sets "now" directly, and T6 gives the same result every time.
+
+---
+
+## 10. Conclusion (120–180 words)
+
+(a) Prediction 1 was right. T6 (AC1) sets the current time to 09:00 and expects Unavailable,
+but v1 read "now" from `new Date()` at page load with no field to change it, so T6 was Not
+testable. Prediction 2 was wrong: I expected T8 (AC5) to fail because Check would add the
+booking, but v1 has no Check button; the check runs live. v1 also had no 10:00–11:00 booking
+(AC4) and no way to block the test room (AC3), so 8 of 9 cases were Not testable.
+
+(b) Bolt added `@supabase/supabase-js` to v1. Keeping it would break the scope (P3), so I
+rejected it. In fix 3, Bolt said it rejects a negative start (AC1), but the code no longer has
+that check, so I could not trust its summary.
+
+(c) v1 looked finished, but at 16:05, T1 (11:00–12:00 in a free room) would show Unavailable:
+"Start time must be after the current time." §4 expects Available (AC4: no overlap). Looking
+finished did not mean meeting AC1–AC6.
