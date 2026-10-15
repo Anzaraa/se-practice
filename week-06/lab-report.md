@@ -100,6 +100,7 @@ log a justified cleanup that preserves behaviour. Save a screenshot of each as
 | 1 | Functional: no way to supply the current time; v1 uses the device clock | Open the page at 16:05 → AC1 says the start must be after the *supplied* current time, so I must be able to set 09:00 → there is no input, the header shows the real clock (16:05), so T6 cannot be set up and every case before 16:05 is rejected | High | Fix |
 | 2 | Functional: the base case cannot be set up — no room has exactly one booking 10:00–11:00, and no room can be blocked or unblocked | Click every room and read its schedule → the nine cases need a room whose only booking is 10:00–11:00, and T3 needs that room blocked → Bexar Lab 310 has 09:30–11:00 and 13:00–14:30, no room has 10:00–11:00, and "Blocked" is fixed in `src/data.ts` (AC3, AC4) | High | Fix |
 | 3 | Usability: the reversed-times message is technical and does not say what is wrong | Allen Hall 101, Start 12:00, End 11:00 → AC6 asks for understandable feedback, e.g. "End time must be after start time" → page shows "Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00)." | Medium | Fix |
+| 4 | Scope: `package.json` lists `@supabase/supabase-js` (a backend/database client) although no file uses it | Run `python tests/check_prototype.py` on the first final export → the scope says no backend or database (P3 must pass) → P3 FAIL: "backend or database - e.g. prototype/project/package.json:14" | Medium | Fix |
 
 ---
 
@@ -169,7 +170,21 @@ What changed: In `src/availability.ts`, I split the single bundled message `"Int
 
 So a user who enters Start 12:00 / End 11:00 now sees "Start time must be earlier than end time." instead of a math expression referencing "1440 minutes." Each failure mode gets its own specific message, all in clock terms a non-developer understands. The rejection logic is identical — AC1 still rejects the same intervals, and the other criteria are untouched.
 ```
+**Cleanup prompt 2 (scope), as sent, and Bolt's answer:**
 
+```text
+PROMPT (cleanup 2, scope):
+Review only the dependencies in `package.json` — in particular `@supabase/supabase-js`, which no file in `src/` imports, while the scope says no backend or database — for unnecessary duplication, confusing naming, or UI feedback problems. Suggest one small cleanup. Do not add features or redesign the whole application. Implement it only if it preserves AC1–AC6.
+
+BOLT'S ANSWER (Bolt's UI displays "supabase" as "Bolt Database"; pasted as shown):
+Let me verify that `@supabase/Bolt Database-js` is truly unused across the source.
+Searched `supabase`
+No file in `src/` references Bolt Database at all. The original task scope explicitly says "no authentication, backend services, analytics, or unrelated features," and all data is fictional in-memory sample data. So `@supabase/Bolt Database-js` is an unused dependency — it adds bundle weight and misleads anyone reading `package.json` into thinking there's a backend.
+Suggested cleanup: Remove `@supabase/Bolt Database-js` from dependencies. Let me verify nothing else in the project references it.
+Confirmed — `@supabase/Bolt Database-js` is not referenced anywhere in the project. Removing it.
+Build, typecheck, and dependency reinstall all pass. Removing `@supabase/Bolt Database-js` dropped 13 packages and had no effect on the build output or bundle.
+What changed: Removed `@supabase/Bolt Database-js` from the `dependencies` in `package.json`. No file in `src/` imported it, and the task scope explicitly requires no backend or database — the app uses fictional in-memory sample data only. Leaving the dependency in created a misleading impression that the project connects to a backend, and it pulled in unnecessary packages. AC1–AC6 are all preserved since the removal touches no application logic.
+```
 Add further blocks for further prompts.
 
 **Every change or suggestion Bolt made, judged.** Accepting is a decision; so is rejecting. Cite
@@ -185,7 +200,7 @@ the AC (or the scope) that justifies it.
 | 6 | Fix 2: the toggle is placed on the "20 seats" badge | accept with a note | Works for AC3, but it is not obvious that the seats badge is a button (AC6 usability); kept because changing it would need one more prompt and it does not break any case | visual check only |
 | 7 | Cleanup: split the bundled message in `src/availability.ts` into plain messages; reversed times now say "Start time must be earlier than end time." | accept | AC6 — understandable validation feedback; rejection logic unchanged so AC1 still holds; no new features (scope) | T7 Drew Hall 105, now 09:00, 12:00–11:00 → Unavailable with the new message; T1 Available, T5 Unavailable, T6 Unavailable — no regression |
 | 8 | Cleanup: new message "End time cannot be later than 24:00." | accept with a note | Harmless and correct for AC1, but the time inputs stop at 23:59, so a user cannot actually reach it (see §9.2) | not reachable from the page |
-
+| 9 | Cleanup 2: removed the unused `@supabase/supabase-js` dependency from `package.json` (Bolt's template added it in v1) | accept | Scope — "no login, backend, database"; nothing in `src/` imported it, so no AC is affected; the provided checker (P3) flags it as a backend | T1 Available, T7 Unavailable after the change; app logic untouched |
 ---
 
 ## 7. Change log — v1 to final
@@ -197,6 +212,7 @@ Two to four concrete changes, each one retested.
 | 1 | Issue 1 — no way to supply the current time (AC1, T6) | Fix | `src/App.tsx`: editable "Current time" input replaces the device-clock state | now 09:00: 09:00–09:30 → Unavailable, 09:30–10:00 → Available; T7 still Unavailable; other cases wait for issue 2 |
 | 2 | Issue 2 — no room with only 10:00–11:00, no way to block (AC3, AC4) | Fix | `src/data.ts`: new room Drew Hall 105 (10:00–11:00); `src/App.tsx`: block/unblock toggle on room cards | T1 Available, T2 Unavailable, T3 Unavailable, T4 Available, T5 Unavailable, T6 Unavailable, T7 Unavailable (message still technical), T8 Available |
 | 3 | Issue 3 — reversed-times message is technical (AC6, T7) | Fix | `src/availability.ts`: plain-language messages instead of "0 ≤ start < end ≤ 1440 minutes" | T7 → Unavailable, "Start time must be earlier than end time."; T1, T5, T6 unchanged |
+| 4 | Issue 4 — unused backend dependency (scope, P3) | Fix | `package.json`: removed `@supabase/supabase-js` | T1 Available, T7 Unavailable; checker P3 to be confirmed on the final export |
 
 ---
 
