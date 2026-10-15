@@ -76,16 +76,15 @@ v1). Leave empty if you did not need it:
 
 | # | Case | What you set up and request | Expected | AC | Result on v1 | Result on final | Final screenshot |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Touching | 11:00–12:00 | Available | AC4 | Not testable | Available / Unavailable / Not testable | final-T1.png |
-| T2 | Overlap | 10:30–11:30 | Unavailable | AC4 | Not testable | Available / Unavailable / Not testable | final-T2.png |
-| T3 | Blocked | 11:00–12:00, room blocked | Unavailable | AC3 | Not testable | Available / Unavailable / Not testable | final-T3.png |
-| T4 | Exactly 2 hours | 12:00–14:00 | Available | AC2 | Not testable | Available / Unavailable / Not testable | final-T4.png |
-| T5 | Over 2 hours | 12:00–14:01 | Unavailable | AC2 | Not testable | Available / Unavailable / Not testable | final-T5.png |
-| T6 | Starts now | 09:00–09:30 (current time 09:00) | Unavailable | AC1 | Not testable | Available / Unavailable / Not testable | final-T6.png |
-| T7 | Reversed times | 12:00–11:00, and the page says why | Unavailable | AC1, AC6 | Unavailable | Available / Unavailable / Not testable | final-T7.png |
-| T8 | Same check twice | T1, then T1 again without reloading | Available | AC5 | Not testable | Available / Unavailable / Not testable | final-T8.png |
-| T9 | Narrow screen | T1 at about 375 px wide | Available | AC6 | Not testable | Available / Unavailable / Not testable | final-T9.png |
-
+| T1 | Touching | 11:00–12:00 | Available | AC4 | Not testable | Available | final-T1.png |
+| T2 | Overlap | 10:30–11:30 | Unavailable | AC4 | Not testable | Unavailable | final-T2.png |
+| T3 | Blocked | 11:00–12:00, room blocked | Unavailable | AC3 | Not testable | Unavailable | final-T3.png |
+| T4 | Exactly 2 hours | 12:00–14:00 | Available | AC2 | Not testable | Available | final-T4.png |
+| T5 | Over 2 hours | 12:00–14:01 | Unavailable | AC2 | Not testable | Unavailable | final-T5.png |
+| T6 | Starts now | 09:00–09:30 (current time 09:00) | Unavailable | AC1 | Not testable | Unavailable | final-T6.png |
+| T7 | Reversed times | 12:00–11:00, and the page says why | Unavailable | AC1, AC6 | Unavailable | Unavailable | final-T7.png |
+| T8 | Same check twice | T1, then T1 again without reloading | Available | AC5 | Not testable | Available | final-T8.png |
+| T9 | Narrow screen | T1 at about 375 px wide | Available | AC6 | Not testable | Available | final-T9.png |
 ---
 
 ## 5. Issue log — cleanup targets
@@ -222,9 +221,19 @@ Pick one file or component Bolt generated that matters for AC1–AC5 — the one
 availability is the best choice. Name its path in backticks, then explain in your own words, without
 the assistant, what it does and how it decides. 60 words or more.
 
-**File:** `(write here, e.g. src/App.tsx)`
+**File:** `src/availability.ts`
 
-<!-- Write your explanation below this line -->
+This file decides if a room can be booked. The main function is checkAvailability. You give it the room, the start and end time (in minutes from midnight), the current time, and the lists of rooms and bookings. It answers “available” or “unavailable”. If the answer is “unavailable”, it also says why. It checks all the rules first, so the user sees every problem at once, not just the first one.
+
+Here are the rules it checks:
+
+AC1: Start and end must be real times. The end can’t be later than 24:00. The start must be before the end, and it must be later than the current time.
+AC2: A booking can’t be longer than 2 hours (120 minutes).
+AC3: The room must exist and must not be blocked.
+AC4: The booking can’t overlap another booking in the same room. The check is start < b.end && end > b.start. It uses < and not <= so that bookings can touch. For example, if one booking ends at 11:00 and a new one starts at 11:00, then 11:00 < 11:00 is false, so there is no conflict.
+AC5: The function only reads the data. It never changes the bookings list.
+
+One small problem: there is no separate check for start ≥ 0 (it was in v1, but the cleanup in fix 3 dropped it). In the app this cannot happen, because parseTime never returns a negative number. If checkAvailability is called directly with a negative start, it is still rejected by the current-time rule, but with the wrong reason; only when the current time is missing would a negative start pass AC1.
 
 ---
 
@@ -236,7 +245,7 @@ The same IDs as `known_fails` in `submission.yml`. Write `none` if the run is cl
 
 | Check | Why it stays |
 | --- | --- |
-| | |
+| none | The last checker run gives 27 PASS, 0 FAIL, 0 ERROR |
 
 ### 9.2 The end of the day
 
@@ -244,27 +253,51 @@ AC1 allows `end ≤ 1440` — a booking may end at 24:00. Can a user of your fin
 23:00–24:00? How — and if not, why is that acceptable or not? (This is the value you declare in
 `submission.yml` under `assumptions.end_of_day`.)
 
--
+No. A user of the final page cannot book 23:00–24:00.
+
+The page uses `<input type="time">` for all three time fields (`src/App.tsx`). This input only
+goes up to 23:59 and shows midnight as "00:00". If the user picks 00:00 as the end time,
+`parseTime` turns it into 0, and the booking fails because the start is not before the end.
+Typing "24:00" is not possible either, and `parseTime` would reject it anyway, because it only
+accepts hours from 0 to 23.
+
+So the latest end a user can choose is 23:59. `checkAvailability` itself accepts `end = 1440`,
+but the page can never send that value.
+
+This is acceptable in practice: the user loses only the last minute of the day, and nothing
+wrong can get through. It is still a gap against AC1, because AC1 says a booking may end at
+24:00, so I declare it in `submission.yml` as `assumptions.end_of_day: not-expressible`.
 
 ### 9.3 Which "now"?
 
 AC1 says "after the supplied current time". What did **v1** use as the current time, and what did
 that mean for testing case T6?
 
--
+-v1 read the real clock from the browser (new Date() in src/App.tsx), fixed it when the page
+loaded, showed it in the header  and used it in the check. There was no
+field to change it. Because of this, every request that started before 16:05 was rejected.
+
+The expected result for T6 does not change: by AC1 it is Unavailable (see §4). What changed was
+the page's result. It depended on when I opened the page, not only on the input, so I could not
+reproduce the case. T6 was Not testable on v1: I could not set the current time to 09:00.
+
+After my fix prompt (fix 1), Bolt added a third <input type="time"> for the current time. Now
+the tester sets "now" directly, and T6 gives the same result every time.
 
 ---
 
 ## 10. Conclusion (120–180 words)
 
-<!-- Answer all three, in your own words, without the assistant:
-     (a) Which of your two predictions in section 2 was right, and what did v1 actually get wrong?
-     (b) Which AI suggestion did you reject, or would have been wrong to accept, and why?
-     (c) What is the difference between "the prototype looks finished" and "the prototype meets
-         AC1-AC6" - shown with one case from section 4?
-     Worthless: "Bolt made some mistakes and I fixed them."
-     Worth everything: "T8 failed on v1: the Check button also added the booking to the list, so
-     checking 11:00-12:00 a second time said Unavailable. AC5 says the check must not change the
-     booking data." -->
+(a) Prediction 1 was right. T6 (AC1) sets the current time to 09:00 and expects Unavailable,
+but v1 read "now" from `new Date()` at page load with no field to change it, so T6 was Not
+testable. Prediction 2 was wrong: I expected T8 (AC5) to fail because Check would add the
+booking, but v1 has no Check button; the check runs live. v1 also had no 10:00–11:00 booking
+(AC4) and no way to block the test room (AC3), so 8 of 9 cases were Not testable.
 
-<!-- Write your conclusion below this line -->
+(b) Bolt added `@supabase/supabase-js` to v1. Keeping it would break the scope (P3), so I
+rejected it. In fix 3, Bolt said it rejects a negative start (AC1), but the code no longer has
+that check, so I could not trust its summary.
+
+(c) v1 looked finished, but at 16:05, T1 (11:00–12:00 in a free room) would show Unavailable:
+"Start time must be after the current time." §4 expects Available (AC4: no overlap). Looking
+finished did not mean meeting AC1–AC6.
