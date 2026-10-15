@@ -154,7 +154,20 @@ All other criteria remain intact: the validation logic in `availability.ts` is u
 **Cleanup prompt, as sent, and Bolt's answer:**
 
 ```text
-(paste here)
+PROMPT (cleanup, issue 3):
+Review only the validation messages in `src/availability.ts` that are shown in the Result panel — in particular the message for reversed times (Start 12:00, End 11:00 shows "Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00).") for unnecessary duplication, confusing naming, or UI feedback problems. Suggest one small cleanup. Do not add features or redesign the whole application. Implement it only if it preserves AC1–AC6.
+
+BOLT'S ANSWER:
+The issue I see: when times are reversed (start 12:00, end 11:00), the message says "Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00)." — this is a confusing message for a non-developer. It exposes the internal minutes representation ("1440 minutes") alongside a clock format ("00:00 to 24:00"), mixes mathematical notation with UI text, and bundles three distinct failure modes (negative start, reversed times, end past midnight) into one line so the user can't tell which one they hit.
+Suggested cleanup: Split that single condition into user-friendly messages in clock terms, and only report the one that actually applies. This preserves AC1 (same rejection logic) and AC6 (clearer feedback).
+Build and typecheck pass.
+What changed: In `src/availability.ts`, I split the single bundled message `"Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00 to 24:00)."` into three separate, plain-language checks that fire independently:
+
+* "End time cannot be later than 24:00." — when end exceeds the day boundary.
+* "Start time must be earlier than end time." — when start ≥ end (reversed or equal times).
+* "Start time must be after the current time." — unchanged, already clear.
+
+So a user who enters Start 12:00 / End 11:00 now sees "Start time must be earlier than end time." instead of a math expression referencing "1440 minutes." Each failure mode gets its own specific message, all in clock terms a non-developer understands. The rejection logic is identical — AC1 still rejects the same intervals, and the other criteria are untouched.
 ```
 
 Add further blocks for further prompts.
@@ -167,6 +180,11 @@ the AC (or the scope) that justifies it.
 | 1 | Fix 1: replaced the locked device-clock state with an editable "Current time" input in `src/App.tsx`; `currentTime` is now parsed from it | accept | AC1 says the start must be after the *supplied* current time — the user now supplies it; no booking data, storage or new features added (scope kept) | Bexar Lab 220, now 09:00: 09:00–09:30 → Unavailable ("Start time must be after the current time"), 09:30–10:00 → Available; T7 → Unavailable; T1–T6, T8, T9 still Not testable (no room with only 10:00–11:00, no way to block — issue 2) |
 | 2 | Fix 1: the "Current time" input defaults to the device clock when the page opens | accept | Harmless default; AC1 only needs the time to be suppliable, and the user can overwrite it with 09:00 before checking | same retest as row 1 |
 | 3 | Fix 1: header and info note now say "set the current time" instead of showing the device clock | accept | AC6 — clearer feedback about which "now" is used | visual check: header and note updated, no layout break |
+| 4 | Fix 2: added room "Drew Hall 105" in `src/data.ts` with exactly one booking 10:00–11:00 (fictional) | accept | AC4 — gives the base case of the nine cases; fictional sample data only, existing bookings unchanged (scope kept) | Drew Hall 105, now 09:00: T1 11:00–12:00 → Available, T2 10:30–11:30 → Unavailable (overlaps 10:00–11:00) |
+| 5 | Fix 2: rooms lifted into React state in `src/App.tsx` + a block/unblock toggle on each room card | accept | AC3 — I must be able to block the selected room; it changes only the room's `blocked` flag in memory, never `BOOKINGS` (AC5), no storage (scope) | T3 Drew Hall 105 blocked, 11:00–12:00 → Unavailable ("is currently blocked"); then all nine: T4 Available, T5 Unavailable, T6 Unavailable, T7 Unavailable, T8 Available twice |
+| 6 | Fix 2: the toggle is placed on the "20 seats" badge | accept with a note | Works for AC3, but it is not obvious that the seats badge is a button (AC6 usability); kept because changing it would need one more prompt and it does not break any case | visual check only |
+| 7 | Cleanup: split the bundled message in `src/availability.ts` into plain messages; reversed times now say "Start time must be earlier than end time." | accept | AC6 — understandable validation feedback; rejection logic unchanged so AC1 still holds; no new features (scope) | T7 Drew Hall 105, now 09:00, 12:00–11:00 → Unavailable with the new message; T1 Available, T5 Unavailable, T6 Unavailable — no regression |
+| 8 | Cleanup: new message "End time cannot be later than 24:00." | accept with a note | Harmless and correct for AC1, but the time inputs stop at 23:59, so a user cannot actually reach it (see §9.2) | not reachable from the page |
 
 ---
 
@@ -178,6 +196,7 @@ Two to four concrete changes, each one retested.
 | --- | --- | --- | --- | --- |
 | 1 | Issue 1 — no way to supply the current time (AC1, T6) | Fix | `src/App.tsx`: editable "Current time" input replaces the device-clock state | now 09:00: 09:00–09:30 → Unavailable, 09:30–10:00 → Available; T7 still Unavailable; other cases wait for issue 2 |
 | 2 | Issue 2 — no room with only 10:00–11:00, no way to block (AC3, AC4) | Fix | `src/data.ts`: new room Drew Hall 105 (10:00–11:00); `src/App.tsx`: block/unblock toggle on room cards | T1 Available, T2 Unavailable, T3 Unavailable, T4 Available, T5 Unavailable, T6 Unavailable, T7 Unavailable (message still technical), T8 Available |
+| 3 | Issue 3 — reversed-times message is technical (AC6, T7) | Fix | `src/availability.ts`: plain-language messages instead of "0 ≤ start < end ≤ 1440 minutes" | T7 → Unavailable, "Start time must be earlier than end time."; T1, T5, T6 unchanged |
 
 ---
 
