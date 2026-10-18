@@ -17,6 +17,7 @@ class CourseOffering {
   section : String
   semester : String
   capacity : Integer {capacity > 0}
+  /enrollmentCount : Integer
   /availablePlaces : Integer
 }
 
@@ -29,18 +30,25 @@ Student "1" -- "0..*" Enrollment : holds >
 CourseOffering "1" -- "0..*" Enrollment : has >
 
 note right of CourseOffering
+  Role names used below: Course.offerings,
+  CourseOffering.course, CourseOffering.enrollments,
+  Student.enrollments, Enrollment.student, Enrollment.offering
   Capacity constraint (R2):
-  inv: enrollments->size() <= capacity
-  Derived (R1, R4):
-  availablePlaces = capacity - enrollments->size()
+  context CourseOffering
+  inv capacityLimit: self.enrollments->size() <= self.capacity
+  Derived (R1, R2, R4, R5):
+  context CourseOffering::enrollmentCount : Integer
+  derive: self.enrollments->size()
+  context CourseOffering::availablePlaces : Integer
+  derive: self.capacity - self.enrollmentCount
   Assumed key: (course, semester, section) unique
 end note
 
 note bottom of Enrollment
   Uniqueness constraint (R3):
-  at most one Enrollment per (student, offering)
-  inv: Enrollment.allInstances()->isUnique(e |
-       Tuple{s = e.student, o = e.offering})
+  context Student
+  inv oneEnrollmentPerOffering:
+    self.enrollments->isUnique(e | e.offering)
   Each Enrollment links exactly 1 Student
   and exactly 1 CourseOffering (R4)
 end note

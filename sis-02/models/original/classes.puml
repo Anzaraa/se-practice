@@ -1,0 +1,47 @@
+@startuml
+title Course registration - domain model
+hide methods
+hide circle
+
+class Student {
+  studentId : String {unique}
+  name : String
+}
+
+class Course {
+  code : String {unique}
+  title : String
+}
+
+class CourseOffering {
+  section : String
+  semester : String
+  capacity : Integer {capacity > 0}
+  /availablePlaces : Integer
+}
+
+class Enrollment {
+  enrolledAt : DateTime
+}
+
+Course "1" -- "0..*" CourseOffering : is offered as >
+Student "1" -- "0..*" Enrollment : holds >
+CourseOffering "1" -- "0..*" Enrollment : has >
+
+note right of CourseOffering
+  Capacity constraint (R2):
+  inv: enrollments->size() <= capacity
+  Derived (R1, R4):
+  availablePlaces = capacity - enrollments->size()
+  Assumed key: (course, semester, section) unique
+end note
+
+note bottom of Enrollment
+  Uniqueness constraint (R3):
+  at most one Enrollment per (student, offering)
+  inv: Enrollment.allInstances()->isUnique(e |
+       Tuple{s = e.student, o = e.offering})
+  Each Enrollment links exactly 1 Student
+  and exactly 1 CourseOffering (R4)
+end note
+@enduml
