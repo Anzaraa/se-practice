@@ -1,0 +1,60 @@
+@startuml
+title Course registration - browse and register (R1-R5)
+autonumber
+
+actor Student as S
+boundary "Registration UI" as UI
+control "RegistrationService" as RS
+database "Registration Store" as DB
+
+== Browse catalog (R1, US-01, AC-01) ==
+S -> UI : openCatalog(semester = "Fall 2026")
+UI -> RS : listOfferings("Fall 2026")
+RS -> DB : read offerings with course data\nand enrollment counts
+DB --> RS : offerings
+RS -> RS : availablePlaces = capacity - enrollmentCount
+RS --> UI : rows (code, title, offering, availablePlaces)
+UI --> S : show catalog\ne.g. MTH115 | Discrete Structures | Section B, Fall 2026 | 1 place
+note over UI, DB
+  Read-only. Viewing the catalog creates no
+  enrollment and reserves no place (AC-02).
+end note
+
+== Request registration (R2-R5, US-02, US-03) ==
+S -> UI : select offering(MTH115 Section B, Fall 2026)
+S -> UI : register(offering = MTH115 Section B, Fall 2026)
+UI -> RS : register(studentId, offeringId)
+
+critical Atomic operation: final checks + creation (one transaction, offering locked)
+  RS -> DB : lock offering; read capacity, enrollmentCount,\nexisting Enrollment(studentId, offeringId)
+  DB --> RS : capacity, enrollmentCount, alreadyEnrolled
+  alt already enrolled
+    RS -> RS : outcome = "already enrolled" (R3)\n(no write, count unchanged)
+  else course full: not yet enrolled and enrollmentCount >= capacity
+    RS -> RS : outcome = "course full" (R2)\n(no write, count unchanged)
+  else not enrolled and places left: not already enrolled and enrollmentCount < capacity
+    RS -> DB : create exactly one Enrollment(student, offering) (R2, R3)
+    DB --> RS : Enrollment created; new enrollmentCount
+    RS -> RS : outcome = success\navailablePlaces = capacity - enrollmentCount
+  end
+  RS -> DB : commit and release lock
+end
+
+alt outcome = success (R4, AC-03)
+  RS --> UI : confirmation(enrollment, offering, availablePlaces)
+  UI --> S : "Registered for MTH115 Section B, Fall 2026"
+else outcome = "course full" (R5, AC-02, AC-05)
+  RS --> UI : "course full"
+  UI --> S : "course full"
+else outcome = "already enrolled" (R5, AC-06)
+  RS --> UI : "already enrolled"
+  UI --> S : "already enrolled"
+end
+
+note right of RS
+  Competing requests (AC-04): the lock serializes them.
+  The first request takes the last place. The second
+  then reads enrollmentCount = capacity and is
+  rejected with "course full".
+end note
+@enduml

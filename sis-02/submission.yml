@@ -1,0 +1,36 @@
+schema: 1
+assignment: "sis-02"            # do not edit
+
+student:
+  name:         Anzara Nurbek
+  student_id:                  24B031941
+  group:                       SE-Monday, 16:00-19:00
+  github:                       Anzaraa
+
+assistant:
+  tool:                         Claude
+  model:                        Claude Opus 5.5
+
+checker:                        
+  pass: 44
+  fail: 0
+  error:  0
+  commit:    112afd4                
+
+counts:                        
+  stories:                     3
+  criteria:                    6
+  exchanges:                   4
+  review_decisions:            7
+  source_checks:               2
+  explanation_words:           288
+  reflection_words:             188
+
+walkthroughs:                   
+  T1: pass
+  T2: pass
+  T3: pass
+  T4: pass
+
+known_fails: []                 
+                                
