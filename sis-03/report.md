@@ -9,7 +9,7 @@
 | Item | Value |
 | --- | --- |
 | Coding assistant (tool) | Claude |
-| Coding assistant model | Calude Opus 5.5 |
+| Coding assistant model | Claude Opus 5.5 |
 | Bolt.new model | not displayed |
 | Bolt project link | https://bolt.new/~/sb1-andhqeqd |
 | Language | Python 3.12 |
