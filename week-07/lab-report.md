@@ -225,8 +225,12 @@ requests* · *mocked booking function*, or your own) and the AC that decides it.
 
 | # | Test or part of the suite | What is weak or wrong | Decision: accept / revise / reject | AC or reason |
 | --- | --- | --- | --- | --- |
-| 1 | | | accept / revise / reject | |
-| 2 | | | accept / revise / reject | |
+| 1 | `it.each(cases)` — T01–T14, X1, X2 in one table-driven test | Own weakness: table-driven. All 16 cases share one test body, so no case has its own named test with its ID in the title; the lab forbids `test.each` | revise — split into one `test('T05 AC1: …')` per case, same inputs and expected values | AC1–AC4; lab rule "one test per case, no test.each" |
+| 2 | `beforeEach` with `vi.useFakeTimers()` and `vi.setSystemTime(new Date(...))` | Own weakness: reads the clock. `canBook` never reads the clock, `now` is passed as the number 540, so the fake clock tests nothing and adds `new Date()` that the rules forbid | reject — remove the timer setup, keep `now = 540` as a plain number | AC1 (`now` is supplied); lab rule "fixed time, no Date" |
+| 3 | Four `it.todo(...)` tests | Own weakness: skipped tests. They assert nothing, but show up in the report and look like coverage | reject — remove; move the open questions (0 ≤ start, NaN, fractions, AC6) to the report §9 | AC1, AC6; lab rule "no skipped tests" |
+| 4 | Expected values of all 16 table cases | Checked against my plan §3: every expected value matches AC1–AC4. None is "expected = current output" | accept | AC1–AC4 |
+| 5 | `decide()` helper — snapshot + frozen bookings checked in every case; AC5 test on 660–720 | Strong, not weak: an Available request is checked against a copy taken before the call, and freezing makes any mutation throw | accept | AC5 |
+| 6 | Flagged requirement "0 ≤ start is not checked directly" | Correct finding: `canBook` has no `start >= 0` check; it holds only while `now ≥ 0` | accept as a finding — add a test X-style later if needed, discuss in §9 | AC1 |
 
 ---
 
