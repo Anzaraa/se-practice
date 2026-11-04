@@ -3,6 +3,7 @@ import { Building2, Clock, CheckCircle2, XCircle, Info, Calendar } from "lucide-
 import type { Room, Verdict } from "./types";
 import { ROOMS as INITIAL_ROOMS, BOOKINGS } from "./data";
 import { checkAvailability, fmt, parseTime } from "./availability";
+import { canBook } from "./booking";
 
 function nowMinutes(): number {
   const d = new Date();
@@ -121,11 +122,26 @@ export default function App() {
     );
   };
 
-  const verdict = useMemo<Verdict | null>(() => {
+    const verdict = useMemo<Verdict | null>(() => {
     if (!roomId) return null;
     const start = parseTime(startStr);
     const end = parseTime(endStr);
-    return checkAvailability(roomId, start, end, currentTime, rooms, BOOKINGS);
+    const room = rooms.find((r) => r.id === roomId);
+    // messages for the user still come from checkAvailability
+    const details = checkAvailability(roomId, start, end, currentTime, rooms, BOOKINGS);
+    if (!room) return details;
+    // the decision itself comes from canBook
+    const ok = canBook({
+      start,
+      end,
+      now: currentTime,
+      blocked: room.blocked,
+      bookings: BOOKINGS.filter((b) => b.roomId === roomId),
+    });
+    if (ok) return { kind: "available" };
+    return details.kind === "unavailable"
+      ? details
+      : { kind: "unavailable", reasons: ["This interval cannot be booked."] };
   }, [roomId, startStr, endStr, currentTime, rooms]);
 
   const roomBookings = useMemo(
