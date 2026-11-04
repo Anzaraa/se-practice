@@ -465,8 +465,42 @@ change and after restoring the correct code from section 7. Every test must pass
 is still open, leave its test failing and explain it in 9.1.
 
 ```text
-(paste here)
-```
+RUN  v3.2.7 C:/Users/Huawei/se-practice/week-07/app
+
+ ✓ src/booking.test.ts (29 tests) 3ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T01 AC4: 660-720 only touches the end of the booking 1ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T02 AC1: 540-570 starts exactly at now 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T03 AC1: 720-720 has zero duration 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T04 AC1: 750-720 is reversed 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T05 AC1: 1380-1441 ends past the end of the day 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T06 AC2: 720-840 is exactly 120 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T07 AC2: 720-841 is 121 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T08 AC4: 570-600 only touches the start of the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T09 AC4: 630-690 partly overlaps the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T10 AC4: 570-690 contains the whole booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T11 AC4: 615-645 lies inside the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T12 AC4: 600-660 is identical to the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T13 AC3: 660-720 in a blocked room 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T14 AC4: 630-690 with no existing bookings 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Available request (660-720) leaves the bookings exactly as before 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Unavailable request (630-690) does not remove or edit the conflicting booking 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: frozen, unsorted bookings are never changed in place, on either outcome 0ms
+   ✓ X1, X2: my own cases from the plan > X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes 0ms
+   ✓ X1, X2: my own cases from the plan > X2 AC4: 690-750 is clear of 600-660 but overlaps the second booking 720-780 0ms
+   ✓ B1-B11: boundaries added in the review > B1 AC1: 541-570 starts one minute after now 0ms
+   ✓ B1-B11: boundaries added in the review > B2 AC1: 720-721 is a one-minute booking 0ms
+   ✓ B1-B11: boundaries added in the review > B3 AC1: 1380-1440 ends exactly at 24:00 (60 minutes) 0ms
+   ✓ B1-B11: boundaries added in the review > B4 AC1: -10 to 30 with now = -30 starts before 0 0ms
+   ✓ B1-B11: boundaries added in the review > B5 AC1: 0-60 with now = -1 starts exactly at 0 0ms
+   ✓ B1-B11: boundaries added in the review > B7 AC4: 660-720 fills the gap and touches two bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B8 AC4: 630-690 overlaps the second of two unsorted bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B9 AC1: 660-720 with now = 660 uses the supplied now 0ms
+   ✓ B1-B11: boundaries added in the review > B10 AC1: a NaN start is not a valid interval 0ms
+   ✓ B1-B11: boundaries added in the review > B11 AC1: an Infinity end is past 1440 0ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+      ```
 ---
 
 ## 7. Task 6 — deliberate defects
@@ -477,18 +511,273 @@ error does not count as detection.
 
 | Trial | Intentional change | Detected / Survived | Failing test ID(s) | If it survived: why, and what you added |
 | --- | --- | --- | --- | --- |
-| M1 | Reject duration >= 120 instead of > 120 | Detected / Survived | | |
-| M2 | Treat touching endpoints as an overlap | Detected / Survived | | |
-| M3 | Remove the blocked-room rejection | Detected / Survived | | |
+| M1 | Reject duration >= 120 instead of > 120 | Detected | T06, X1 | — |
+| M2 | Treat touching endpoints as an overlap | Detected | T01, T08, AC5 | also failed: B7 and the second AC5 test (frozen bookings) |
+| M3 | Remove the blocked-room rejection | Detected | T13 | — |
 
 **The run of each mutant, pasted unedited.** Paste the `Tests` summary line and the failing test
 names at least:
-
 ```text
-(paste here)
+M1 — duration >= 120
+RUN  v3.2.7 C:/Users/Huawei/se-practice/week-07/app
+
+ ❯ src/booking.test.ts (29 tests | 2 failed) 8ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T01 AC4: 660-720 only touches the end of the booking 1ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T02 AC1: 540-570 starts exactly at now 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T03 AC1: 720-720 has zero duration 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T04 AC1: 750-720 is reversed 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T05 AC1: 1380-1441 ends past the end of the day 0ms
+   × T01-T14: the reviewed case table (now = 540, booking 600-660) > T06 AC2: 720-840 is exactly 120 minutes 4ms
+     → expected false to be true // Object.is equality
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T07 AC2: 720-841 is 121 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T08 AC4: 570-600 only touches the start of the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T09 AC4: 630-690 partly overlaps the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T10 AC4: 570-690 contains the whole booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T11 AC4: 615-645 lies inside the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T12 AC4: 600-660 is identical to the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T13 AC3: 660-720 in a blocked room 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T14 AC4: 630-690 with no existing bookings 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Available request (660-720) leaves the bookings exactly as before 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Unavailable request (630-690) does not remove or edit the conflicting booking 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: frozen, unsorted bookings are never changed in place, on either outcome 0ms
+   × X1, X2: my own cases from the plan > X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes 0ms
+     → expected false to be true // Object.is equality
+   ✓ X1, X2: my own cases from the plan > X2 AC4: 690-750 is clear of 600-660 but overlaps the second booking 720-780 0ms
+   ✓ B1-B11: boundaries added in the review > B1 AC1: 541-570 starts one minute after now 0ms
+   ✓ B1-B11: boundaries added in the review > B2 AC1: 720-721 is a one-minute booking 0ms
+   ✓ B1-B11: boundaries added in the review > B3 AC1: 1380-1440 ends exactly at 24:00 (60 minutes) 0ms
+   ✓ B1-B11: boundaries added in the review > B4 AC1: -10 to 30 with now = -30 starts before 0 0ms
+   ✓ B1-B11: boundaries added in the review > B5 AC1: 0-60 with now = -1 starts exactly at 0 0ms
+   ✓ B1-B11: boundaries added in the review > B7 AC4: 660-720 fills the gap and touches two bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B8 AC4: 630-690 overlaps the second of two unsorted bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B9 AC1: 660-720 with now = 660 uses the supplied now 0ms
+   ✓ B1-B11: boundaries added in the review > B10 AC1: a NaN start is not a valid interval 0ms
+   ✓ B1-B11: boundaries added in the review > B11 AC1: an Infinity end is past 1440 0ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > T01-T14: the reviewed case table (now = 540, booking 600-660) > T06 AC2: 720-840 is exactly 120 minutes
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:53:37
+     51| 
+     52|   test('T06 AC2: 720-840 is exactly 120 minutes', () => {
+     53|     expect(decide(input(720, 840))).toBe(true);
+       |                                     ^
+     54|   });
+     55| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/booking.test.ts > X1, X2: my own cases from the plan > X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:125:39
+    123| describe('X1, X2: my own cases from the plan', () => {
+    124|   test('X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes', (…
+    125|     expect(decide(input(1320, 1440))).toBe(true);
+       |                                       ^
+    126|   });
+    127| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 27 passed (29)
+
+M2 — touching endpoints as overlap
+ RUN  v3.2.7 C:/Users/Huawei/se-practice/week-07/app
+
+ ❯ src/booking.test.ts (29 tests | 5 failed) 9ms
+   × T01-T14: the reviewed case table (now = 540, booking 600-660) > T01 AC4: 660-720 only touches the end of the booking 5ms
+     → expected false to be true // Object.is equality
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T02 AC1: 540-570 starts exactly at now 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T03 AC1: 720-720 has zero duration 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T04 AC1: 750-720 is reversed 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T05 AC1: 1380-1441 ends past the end of the day 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T06 AC2: 720-840 is exactly 120 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T07 AC2: 720-841 is 121 minutes 0ms
+   × T01-T14: the reviewed case table (now = 540, booking 600-660) > T08 AC4: 570-600 only touches the start of the booking 0ms
+     → expected false to be true // Object.is equality
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T09 AC4: 630-690 partly overlaps the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T10 AC4: 570-690 contains the whole booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T11 AC4: 615-645 lies inside the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T12 AC4: 600-660 is identical to the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T13 AC3: 660-720 in a blocked room 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T14 AC4: 630-690 with no existing bookings 0ms
+   × AC5: a decision without changing the booking data > AC5: an Available request (660-720) leaves the bookings exactly as before 0ms
+     → expected false to be true // Object.is equality
+   ✓ AC5: a decision without changing the booking data > AC5: an Unavailable request (630-690) does not remove or edit the conflicting booking 0ms
+   × AC5: a decision without changing the booking data > AC5: frozen, unsorted bookings are never changed in place, on either outcome 0ms
+     → expected false to be true // Object.is equality
+   ✓ X1, X2: my own cases from the plan > X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes 0ms
+   ✓ X1, X2: my own cases from the plan > X2 AC4: 690-750 is clear of 600-660 but overlaps the second booking 720-780 0ms
+   ✓ B1-B11: boundaries added in the review > B1 AC1: 541-570 starts one minute after now 0ms
+   ✓ B1-B11: boundaries added in the review > B2 AC1: 720-721 is a one-minute booking 0ms
+   ✓ B1-B11: boundaries added in the review > B3 AC1: 1380-1440 ends exactly at 24:00 (60 minutes) 0ms
+   ✓ B1-B11: boundaries added in the review > B4 AC1: -10 to 30 with now = -30 starts before 0 0ms
+   ✓ B1-B11: boundaries added in the review > B5 AC1: 0-60 with now = -1 starts exactly at 0 0ms
+   × B1-B11: boundaries added in the review > B7 AC4: 660-720 fills the gap and touches two bookings 0ms
+     → expected false to be true // Object.is equality
+   ✓ B1-B11: boundaries added in the review > B8 AC4: 630-690 overlaps the second of two unsorted bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B9 AC1: 660-720 with now = 660 uses the supplied now 0ms
+   ✓ B1-B11: boundaries added in the review > B10 AC1: a NaN start is not a valid interval 0ms
+   ✓ B1-B11: boundaries added in the review > B11 AC1: an Infinity end is past 1440 0ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > T01-T14: the reviewed case table (now = 540, booking 600-660) > T01 AC4: 660-720 only touches the end of the booking
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:33:37
+     31| describe('T01-T14: the reviewed case table (now = 540, booking 600-660)', () => {
+     32|   test('T01 AC4: 660-720 only touches the end of the booking', () => {
+     33|     expect(decide(input(660, 720))).toBe(true);
+       |                                     ^
+     34|   });
+     35| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/booking.test.ts > T01-T14: the reviewed case table (now = 540, booking 600-660) > T08 AC4: 570-600 only touches the start of the booking
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:61:37
+     59| 
+     60|   test('T08 AC4: 570-600 only touches the start of the booking', () => {
+     61|     expect(decide(input(570, 600))).toBe(true);
+       |                                     ^
+     62|   });
+     63| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/booking.test.ts > AC5: a decision without changing the booking data > AC5: an Available request (660-720) leaves the bookings exactly as before
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:96:20
+     94|     const result = canBook({ start: 660, end: 720, now: 540, blocked: false, bookings…
+     95| 
+     96|     expect(result).toBe(true);
+       |                    ^
+     97|     expect(bookings).toEqual(before);
+     98|     expect(JSON.stringify(bookings)).toBe(JSON.stringify(before));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/booking.test.ts > AC5: a decision without changing the booking data > AC5: frozen, unsorted bookings are never changed in place, on either outcome
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:118:62
+    116|       ]) as Interval[];
+    117| 
+    118|     expect(canBook(input(660, 720, { bookings: frozen() }))).toBe(true);
+       |                                                              ^
+    119|     expect(canBook(input(630, 690, { bookings: frozen() }))).toBe(false);
+    120|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/booking.test.ts > B1-B11: boundaries added in the review > B7 AC4: 660-720 fills the gap and touches two bookings
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:163:51
+    161|       { start: 720, end: 780 },
+    162|     ];
+    163|     expect(decide(input(660, 720, { bookings }))).toBe(true);
+       |                                                   ^
+    164|   });
+    165| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 24 passed (29)
+
+
+M3 — no blocked-room rejection
+RUN  v3.2.7 C:/Users/Huawei/se-practice/week-07/app
+
+ ✓ src/booking.test.ts (29 tests) 3ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T01 AC4: 660-720 only touches the end of the booking 1ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T02 AC1: 540-570 starts exactly at now 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T03 AC1: 720-720 has zero duration 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T04 AC1: 750-720 is reversed 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T05 AC1: 1380-1441 ends past the end of the day 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T06 AC2: 720-840 is exactly 120 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T07 AC2: 720-841 is 121 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T08 AC4: 570-600 only touches the start of the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T09 AC4: 630-690 partly overlaps the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T10 AC4: 570-690 contains the whole booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T11 AC4: 615-645 lies inside the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T12 AC4: 600-660 is identical to the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T13 AC3: 660-720 in a blocked room 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T14 AC4: 630-690 with no existing bookings 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Available request (660-720) leaves the bookings exactly as before 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Unavailable request (630-690) does not remove or edit the conflicting booking 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: frozen, unsorted bookings are never changed in place, on either outcome 0ms
+   ✓ X1, X2: my own cases from the plan > X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes 0ms
+   ✓ X1, X2: my own cases from the plan > X2 AC4: 690-750 is clear of 600-660 but overlaps the second booking 720-780 0ms
+   ✓ B1-B11: boundaries added in the review > B1 AC1: 541-570 starts one minute after now 0ms
+   ✓ B1-B11: boundaries added in the review > B2 AC1: 720-721 is a one-minute booking 0ms
+   ✓ B1-B11: boundaries added in the review > B3 AC1: 1380-1440 ends exactly at 24:00 (60 minutes) 0ms
+   ✓ B1-B11: boundaries added in the review > B4 AC1: -10 to 30 with now = -30 starts before 0 0ms
+   ✓ B1-B11: boundaries added in the review > B5 AC1: 0-60 with now = -1 starts exactly at 0 0ms
+   ✓ B1-B11: boundaries added in the review > B7 AC4: 660-720 fills the gap and touches two bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B8 AC4: 630-690 overlaps the second of two unsorted bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B9 AC1: 660-720 with now = 660 uses the supplied now 0ms
+   ✓ B1-B11: boundaries added in the review > B10 AC1: a NaN start is not a valid interval 0ms
+   ✓ B1-B11: boundaries added in the review > B11 AC1: an Infinity end is past 1440 0ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
 ```
 
-All three changes reverted, and the full suite run again (section 6.3): yes / no
+All three changes reverted, and the full suite run again (section 6.3): yes 
 
 ---
 
