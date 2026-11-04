@@ -1,166 +1,185 @@
-// src/booking.test.ts
-// Unit tests for canBook() — the same function the page imports via `import { canBook } from "./booking"`.
-// The function under test is NOT modified. All inputs are fresh per test; time is fixed.
+// Final suite for canBook (Practice #07).
+// Started from the assistant's first suite (suites/first/) and its improvement answer, then
+// reviewed against AC1-AC6 and the plan in lab-report.md section 3.
+// Rules: one test per case with its ID in the title, exact .toBe(true/false), the real module,
+// now passed as a number, a fresh fixture in every test, no mocks, no clock, no test.each.
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { canBook, type CanBookInput, type Interval } from "./booking";
+import { describe, test, expect } from 'vitest';
+import { canBook, type CanBookInput, type Interval } from './booking';
 
-// ---------------------------------------------------------------------------
-// Fixed time & fresh fixtures
-// ---------------------------------------------------------------------------
-
-/** Supplied current time for every test: 540 = 09:00. */
-const FIXED_NOW = 540;
-
-/** Default existing booking 600–660 (10:00–11:00). Returned as a NEW array every call. */
-function defaultBookings(): Interval[] {
-  return [{ start: 600, end: 660 }];
-}
-
-/** Deep-freeze bookings so any mutation inside canBook throws (ESM test files run in strict mode). */
-function freezeBookings(bookings: Interval[]): Interval[] {
-  bookings.forEach((b) => Object.freeze(b));
-  return Object.freeze(bookings) as Interval[];
-}
-
-/**
- * Builds a fresh CanBookInput from the default fixture:
- * now = 540, blocked = false, bookings = [{ start: 600, end: 660 }].
- */
-function makeInput(
-  start: number,
-  end: number,
-  overrides: Partial<Omit<CanBookInput, "start" | "end">> = {},
-): CanBookInput {
-  const bookings = overrides.bookings
-    ? structuredClone(overrides.bookings) // never share a table literal between runs
-    : defaultBookings();
+// Default fixture: now = 540 (09:00), blocked = false, one booking 600-660 (10:00-11:00).
+// Built fresh on every call, so no test can see another test's data.
+function input(start: number, end: number, changes: Partial<CanBookInput> = {}): CanBookInput {
   return {
     start,
     end,
-    now: overrides.now ?? FIXED_NOW,
-    blocked: overrides.blocked ?? false,
-    bookings: freezeBookings(bookings),
+    now: 540,
+    blocked: false,
+    bookings: [{ start: 600, end: 660 }],
+    ...changes,
   };
 }
 
-/** Calls canBook and asserts that the booking data is exactly unchanged (AC5). */
-function decide(input: CanBookInput): boolean {
-  const bookingsRef = input.bookings;
-  const snapshot = structuredClone(input.bookings);
-
-  const result = canBook(input);
-
-  expect(input.bookings).toBe(bookingsRef); // same array, not replaced
-  expect(input.bookings).toStrictEqual(snapshot); // same content, same length
+// Calls canBook and checks that the booking data is exactly as before the call (AC5).
+function decide(req: CanBookInput): boolean {
+  const before = structuredClone(req.bookings);
+  const result = canBook(req);
+  expect(req.bookings).toEqual(before);
   return result;
 }
 
-// Fixed wall clock: canBook must rely only on the supplied `now`,
-// so pinning the system clock keeps every run deterministic.
-beforeEach(() => {
-  vi.useFakeTimers();
-  vi.setSystemTime(new Date("2026-11-04T23:30:00+05:00")); // deliberately far from now = 540 (09:00)
-});
+describe('T01-T14: the reviewed case table (now = 540, booking 600-660)', () => {
+  test('T01 AC4: 660-720 only touches the end of the booking', () => {
+    expect(decide(input(660, 720))).toBe(true);
+  });
 
-afterEach(() => {
-  vi.useRealTimers();
-});
+  test('T02 AC1: 540-570 starts exactly at now', () => {
+    expect(decide(input(540, 570))).toBe(false);
+  });
 
-// ---------------------------------------------------------------------------
-// Reviewed case table
-// ---------------------------------------------------------------------------
+  test('T03 AC1: 720-720 has zero duration', () => {
+    expect(decide(input(720, 720))).toBe(false);
+  });
 
-interface Case {
-  id: string;
-  ac: string;
-  desc: string;
-  start: number;
-  end: number;
-  blocked?: boolean;
-  bookings?: Interval[];
-  expected: boolean;
-}
+  test('T04 AC1: 750-720 is reversed', () => {
+    expect(decide(input(750, 720))).toBe(false);
+  });
 
-const cases: Case[] = [
-  // AC1 — interval validity and "after now"
-  { id: "T02", ac: "AC1", desc: "540–570 starts exactly at now", start: 540, end: 570, expected: false },
-  { id: "T03", ac: "AC1", desc: "720–720 zero duration", start: 720, end: 720, expected: false },
-  { id: "T04", ac: "AC1", desc: "750–720 reversed interval", start: 750, end: 720, expected: false },
-  { id: "T05", ac: "AC1", desc: "1380–1441 ends past day end", start: 1380, end: 1441, expected: false },
+  test('T05 AC1: 1380-1441 ends past the end of the day', () => {
+    expect(decide(input(1380, 1441))).toBe(false);
+  });
 
-  // AC1 + AC2 — boundary at day end and max duration together
-  { id: "X1", ac: "AC1, AC2", desc: "1320–1440 ends at midnight, 120 min", start: 1320, end: 1440, expected: true },
+  test('T06 AC2: 720-840 is exactly 120 minutes', () => {
+    expect(decide(input(720, 840))).toBe(true);
+  });
 
-  // AC2 — max duration 120
-  { id: "T06", ac: "AC2", desc: "720–840 exactly 120 min", start: 720, end: 840, expected: true },
-  { id: "T07", ac: "AC2", desc: "720–841 is 121 min", start: 720, end: 841, expected: false },
+  test('T07 AC2: 720-841 is 121 minutes', () => {
+    expect(decide(input(720, 841))).toBe(false);
+  });
 
-  // AC3 — blocked room
-  { id: "T13", ac: "AC3", desc: "660–720 (valid as in T01) but room blocked", start: 660, end: 720, blocked: true, expected: false },
+  test('T08 AC4: 570-600 only touches the start of the booking', () => {
+    expect(decide(input(570, 600))).toBe(true);
+  });
 
-  // AC4 — overlap; touching endpoints allowed
-  { id: "T01", ac: "AC4", desc: "660–720 touches booking end", start: 660, end: 720, expected: true },
-  { id: "T08", ac: "AC4", desc: "570–600 touches booking start", start: 570, end: 600, expected: true },
-  { id: "T09", ac: "AC4", desc: "630–690 partial overlap", start: 630, end: 690, expected: false },
-  { id: "T10", ac: "AC4", desc: "570–690 contains booking", start: 570, end: 690, expected: false },
-  { id: "T11", ac: "AC4", desc: "615–645 inside booking", start: 615, end: 645, expected: false },
-  { id: "T12", ac: "AC4", desc: "600–660 identical to booking", start: 600, end: 660, expected: false },
-  { id: "T14", ac: "AC4", desc: "630–690 with no bookings", start: 630, end: 690, bookings: [], expected: true },
-  {
-    id: "X2",
-    ac: "AC4",
-    desc: "690–750 clear of 1st booking, overlaps 2nd",
-    start: 690,
-    end: 750,
-    bookings: [
-      { start: 600, end: 660 },
-      { start: 720, end: 780 },
-    ],
-    expected: false,
-  },
-];
+  test('T09 AC4: 630-690 partly overlaps the booking', () => {
+    expect(decide(input(630, 690))).toBe(false);
+  });
 
-describe("canBook — reviewed case table (now = 540)", () => {
-  it.each(cases)("$id [$ac] $desc → $expected", ({ start, end, blocked, bookings, expected }) => {
-    const input = makeInput(start, end, { blocked, bookings });
-    expect(decide(input)).toBe(expected);
+  test('T10 AC4: 570-690 contains the whole booking', () => {
+    expect(decide(input(570, 690))).toBe(false);
+  });
+
+  test('T11 AC4: 615-645 lies inside the booking', () => {
+    expect(decide(input(615, 645))).toBe(false);
+  });
+
+  test('T12 AC4: 600-660 is identical to the booking', () => {
+    expect(decide(input(600, 660))).toBe(false);
+  });
+
+  test('T13 AC3: 660-720 in a blocked room', () => {
+    expect(decide(input(660, 720, { blocked: true }))).toBe(false);
+  });
+
+  test('T14 AC4: 630-690 with no existing bookings', () => {
+    expect(decide(input(630, 690, { bookings: [] }))).toBe(true);
   });
 });
 
-// ---------------------------------------------------------------------------
-// AC5 — decision only, booking data unchanged
-// ---------------------------------------------------------------------------
+describe('AC5: a decision without changing the booking data', () => {
+  test('AC5: an Available request (660-720) leaves the bookings exactly as before', () => {
+    const bookings: Interval[] = [{ start: 600, end: 660 }];
+    const before = structuredClone(bookings);
 
-describe("canBook — AC5: returns a decision without changing booking data", () => {
-  it("AC5: Available request (660–720) returns true and leaves bookings as exactly [600–660]", () => {
-    const input = makeInput(660, 720);
-    const bookingsRef = input.bookings;
-
-    const result = canBook(input);
+    const result = canBook({ start: 660, end: 720, now: 540, blocked: false, bookings });
 
     expect(result).toBe(true);
-    expect(typeof result).toBe("boolean"); // a clear Available / Unavailable decision
-    expect(input.bookings).toBe(bookingsRef);
-    expect(input.bookings).toHaveLength(1);
-    expect(input.bookings).toStrictEqual([{ start: 600, end: 660 }]);
-    expect(input.bookings).not.toContainEqual({ start: 660, end: 720 }); // requested interval not added
+    expect(bookings).toEqual(before);
+    expect(JSON.stringify(bookings)).toBe(JSON.stringify(before));
   });
 
-  it("AC5: repeated calls give the same decision (no hidden state)", () => {
-    const input = makeInput(660, 720);
-    expect(decide(input)).toBe(true);
-    expect(decide(input)).toBe(true);
+  test('AC5: an Unavailable request (630-690) does not remove or edit the conflicting booking', () => {
+    const bookings: Interval[] = [{ start: 600, end: 660 }];
+    const before = structuredClone(bookings);
+
+    const result = canBook({ start: 630, end: 690, now: 540, blocked: false, bookings });
+
+    expect(result).toBe(false);
+    expect(bookings).toEqual(before);
+  });
+
+  test('AC5: frozen, unsorted bookings are never changed in place, on either outcome', () => {
+    const frozen = (): Interval[] =>
+      Object.freeze([
+        Object.freeze({ start: 720, end: 780 }),
+        Object.freeze({ start: 600, end: 660 }),
+      ]) as Interval[];
+
+    expect(canBook(input(660, 720, { bookings: frozen() }))).toBe(true);
+    expect(canBook(input(630, 690, { bookings: frozen() }))).toBe(false);
   });
 });
 
-// ---------------------------------------------------------------------------
-// Open questions — see the "unclear requirements" notes; not asserted yet
-// ---------------------------------------------------------------------------
+describe('X1, X2: my own cases from the plan', () => {
+  test('X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes', () => {
+    expect(decide(input(1320, 1440))).toBe(true);
+  });
 
-describe("canBook — pending clarification", () => {
-  it.todo("AC1: start < 0 with a negative `now` — is `now` guaranteed ≥ 0? (code has no explicit 0 ≤ start check)");
-  it.todo("AC1: non-integer minutes (e.g. 600.5) — allowed or rejected?");
-  it.todo("AC1: NaN / Infinity start or end — code rejects them, but no AC states it");
-  it.todo("AC6: layout at desktop and narrow/mobile width + validation messages — needs a component/e2e test, not canBook");
+  test('X2 AC4: 690-750 is clear of 600-660 but overlaps the second booking 720-780', () => {
+    const bookings = [
+      { start: 600, end: 660 },
+      { start: 720, end: 780 },
+    ];
+    expect(decide(input(690, 750, { bookings }))).toBe(false);
+  });
+});
+
+describe('B1-B11: boundaries added in the review', () => {
+  test('B1 AC1: 541-570 starts one minute after now', () => {
+    expect(decide(input(541, 570))).toBe(true);
+  });
+
+  test('B2 AC1: 720-721 is a one-minute booking', () => {
+    expect(decide(input(720, 721))).toBe(true);
+  });
+
+  test('B3 AC1: 1380-1440 ends exactly at 24:00 (60 minutes)', () => {
+    expect(decide(input(1380, 1440))).toBe(true);
+  });
+
+  test('B4 AC1: -10 to 30 with now = -30 starts before 0', () => {
+    expect(decide(input(-10, 30, { now: -30 }))).toBe(false);
+  });
+
+  test('B5 AC1: 0-60 with now = -1 starts exactly at 0', () => {
+    expect(decide(input(0, 60, { now: -1 }))).toBe(true);
+  });
+
+  test('B7 AC4: 660-720 fills the gap and touches two bookings', () => {
+    const bookings = [
+      { start: 600, end: 660 },
+      { start: 720, end: 780 },
+    ];
+    expect(decide(input(660, 720, { bookings }))).toBe(true);
+  });
+
+  test('B8 AC4: 630-690 overlaps the second of two unsorted bookings', () => {
+    const bookings = [
+      { start: 720, end: 780 },
+      { start: 600, end: 660 },
+    ];
+    expect(decide(input(630, 690, { bookings }))).toBe(false);
+  });
+
+  test('B9 AC1: 660-720 with now = 660 uses the supplied now', () => {
+    expect(decide(input(660, 720, { now: 660 }))).toBe(false);
+  });
+
+  test('B10 AC1: a NaN start is not a valid interval', () => {
+    expect(decide(input(Number.NaN, 720))).toBe(false);
+  });
+
+  test('B11 AC1: an Infinity end is past 1440', () => {
+    expect(decide(input(720, Number.POSITIVE_INFINITY))).toBe(false);
+  });
 });

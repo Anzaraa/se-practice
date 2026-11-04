@@ -18,6 +18,7 @@ const DAY_END = 1440;
 export function canBook({ start, end, now, blocked, bookings }: CanBookInput): boolean {
   // AC1 — interval validity
   if (!Number.isFinite(start) || !Number.isFinite(end)) return false;
+  if (start < 0) return false;
   if (end > DAY_END) return false;
   if (start >= end) return false;
   if (start <= now) return false;

@@ -14,7 +14,7 @@
 | Assistant that generated the tests (tool) | Claude |
 | Exact model (with its version, or `not displayed`) | Claude Opus 5.5 |
 | Where I ran the tests (Bolt terminal / my computer / Codespace) | my computer |
-| Vitest version (the `RUN  v…` line of a run) | |
+| Vitest version (the `RUN  v…` line of a run) | 3.2.7 |
 | Test command | npx vitest run |
 
 ---
@@ -243,15 +243,45 @@ The **real** terminal output of the first run of the first suite, pasted unedite
 is not a run.
 
 ```text
-(paste here)
-```
+ RUN  v3.2.7 C:/Users/Huawei/se-practice/week-07/app
+
+ ✓ src/booking.test.ts (22 tests | 4 skipped) 6ms
+   ✓ canBook — reviewed case table (now = 540) > 'T02' ['AC1'] '540–570 starts exactly at now' → false 3ms
+   ✓ canBook — reviewed case table (now = 540) > 'T03' ['AC1'] '720–720 zero duration' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T04' ['AC1'] '750–720 reversed interval' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T05' ['AC1'] '1380–1441 ends past day end' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'X1' ['AC1, AC2'] '1320–1440 ends at midnight, 120 min' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T06' ['AC2'] '720–840 exactly 120 min' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T07' ['AC2'] '720–841 is 121 min' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T13' ['AC3'] '660–720 (valid as in T01) but room bl…' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T01' ['AC4'] '660–720 touches booking end' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T08' ['AC4'] '570–600 touches booking start' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T09' ['AC4'] '630–690 partial overlap' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T10' ['AC4'] '570–690 contains booking' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T11' ['AC4'] '615–645 inside booking' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T12' ['AC4'] '600–660 identical to booking' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T14' ['AC4'] '630–690 with no bookings' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'X2' ['AC4'] '690–750 clear of 1st booking, overlap…' → false 0ms
+   ✓ canBook — AC5: returns a decision without changing booking data > AC5: Available request (660–720) returns true and leaves bookings as exactly [600–660] 0ms
+   ✓ canBook — AC5: returns a decision without changing booking data > AC5: repeated calls give the same decision (no hidden state) 0ms
+   ↓ canBook — pending clarification > AC1: start < 0 with a negative `now` — is `now` guaranteed ≥ 0? (code has no explicit 0 ≤ start check)
+   ↓ canBook — pending clarification > AC1: non-integer minutes (e.g. 600.5) — allowed or rejected?
+   ↓ canBook — pending clarification > AC1: NaN / Infinity start or end — code rejects them, but no AC states it
+   ↓ canBook — pending clarification > AC6: layout at desktop and narrow/mobile width + validation messages — needs a component/e2e test, not canBook
+
+ Test Files  1 passed (1)
+      Tests  18 passed | 4 todo (22)
+   Start at  16:29:52
+   Duration  729ms (transform 26ms, setup 0ms, collect 55ms, tests 6ms, environment 0ms, prepare 341ms)
+   ```
 
 **Each failure, diagnosed** (the deck's table: import/runner error · assertion mismatch · result
 changing per run · no tests discovered). Write `none` in the first row if nothing failed.
 
 | Failing test | Observed failure | First check | Test repair or implementation fix? | Action taken |
 | --- | --- | --- | --- | --- |
-| | | | | |
+| none | no test failed: 18 passed, 4 todo | — | — | — |
+| 4 × it.todo (pending clarification) | not a failure: reported as todo, they assert nothing | test file: it.todo instead of real tests | test repair | removed in the final suite, open questions moved to §9 (see §5 rows 3 and 6) |
 
 ### 6.2 The improvement prompt
 
@@ -259,7 +289,173 @@ The deck's improvement prompt exactly as sent, followed by the actual output fro
 paste the assistant's answer, unedited:
 
 ```text
-(paste here)
+Review this test suite against AC1–AC6 and our case table. Identify incorrect expectations, weak assertions, duplicated cases, and missing boundaries.
+
+For each proposed change, explain the requirement and the defect it could detect. Improve the tests without changing correct expectations to match buggy behavior.
+
+Use the actual failure output below. Separate test repairs from implementation fixes.
+
+ RUN  v3.2.7 C:/Users/Huawei/se-practice/week-07/app
+
+ ✓ src/booking.test.ts (22 tests | 4 skipped) 6ms
+   ✓ canBook — reviewed case table (now = 540) > 'T02' ['AC1'] '540–570 starts exactly at now' → false 3ms
+   ✓ canBook — reviewed case table (now = 540) > 'T03' ['AC1'] '720–720 zero duration' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T04' ['AC1'] '750–720 reversed interval' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T05' ['AC1'] '1380–1441 ends past day end' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'X1' ['AC1, AC2'] '1320–1440 ends at midnight, 120 min' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T06' ['AC2'] '720–840 exactly 120 min' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T07' ['AC2'] '720–841 is 121 min' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T13' ['AC3'] '660–720 (valid as in T01) but room bl…' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T01' ['AC4'] '660–720 touches booking end' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T08' ['AC4'] '570–600 touches booking start' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T09' ['AC4'] '630–690 partial overlap' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T10' ['AC4'] '570–690 contains booking' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T11' ['AC4'] '615–645 inside booking' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T12' ['AC4'] '600–660 identical to booking' → false 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'T14' ['AC4'] '630–690 with no bookings' → true 0ms
+   ✓ canBook — reviewed case table (now = 540) > 'X2' ['AC4'] '690–750 clear of 1st booking, overlap…' → false 0ms
+   ✓ canBook — AC5: returns a decision without changing booking data > AC5: Available request (660–720) returns true and leaves bookings as exactly [600–660] 0ms
+   ✓ canBook — AC5: returns a decision without changing booking data > AC5: repeated calls give the same decision (no hidden state) 0ms
+   ↓ canBook — pending clarification > AC1: start < 0 with a negative `now` — is `now` guaranteed ≥ 0? (code has no explicit 0 ≤ start check)
+   ↓ canBook — pending clarification > AC1: non-integer minutes (e.g. 600.5) — allowed or rejected?
+   ↓ canBook — pending clarification > AC1: NaN / Infinity start or end — code rejects them, but no AC states it
+   ↓ canBook — pending clarification > AC6: layout at desktop and narrow/mobile width + validation messages — needs a component/e2e test, not canBook
+
+ Test Files  1 passed (1)
+      Tests  18 passed | 4 todo (22)
+```
+
+Assistant's answer (unedited; its new test file is not pasted here):
+
+```text
+I'll review the suite against the ACs and the case table, then update the test file. Implementation fixes are kept separate below.
+
+The output you pasted contains no failures: 18 tests passed and 4 are todo. A green run is not evidence that every AC holds, though. No case in the old suite could reach AC1's `0 ≤ start` rule, so it would pass even if that check were missing. The revised **booking.test.ts** fixes the problems below.
+
+## Review findings
+
+**Incorrect expectations: none.** I rechecked every T and X case against AC1–AC4. Each expected value follows from the criteria, and each negative case breaks exactly one rule. None of them were changed.
+
+**Weak assertions**
+
+| Issue | Requirement | Defect the repair detects |
+|---|---|---|
+| Bookings were frozen before the snapshot check, so `toStrictEqual(snapshot)` could never fail | AC5 | Now `decide()` uses unfrozen data (as the page does) and compares the whole input. This catches a bug that edits `bookings`, `now` or `blocked`. |
+| AC5 was tested only on the Available path | AC5 | A new Unavailable test catches code that removes or "fixes" the conflicting booking when it rejects. |
+| No test caught a temporary in-place change | AC5 | A frozen, unsorted fixture catches in-place `sort()` or push-then-pop on either outcome. |
+| `typeof result === "boolean"` was redundant | — | Removed, since `toBe(true)` already proves it. |
+| Nothing proved the supplied `now` is used | AC1 | **B9** (now = 660) catches a hard-coded 540. The pinned clock at 23:30 catches use of `Date.now()`. |
+| Test titles printed quoted values (`'T02' ['AC1']`) | — | Titles are now plain strings, which only improves readability. |
+
+**Duplicated cases**
+- The "repeated calls give the same decision" test added nothing beyond T01 and was removed.
+- T13/T01 and T14/T09 share intervals on purpose. Each pair differs in one input, so I kept them as pairs, not duplicates.
+- X1 tests two boundaries at once. If it failed, you couldn't tell whether the `end ≤ 1440` check or the 120-minute check was off by one. **B3** isolates the day-end boundary, T06 already isolates the 120-minute one, and X1 stays as the combined case.
+
+**Missing boundaries**
+
+| ID | Case → expected | Requirement | Defect it detects |
+|---|---|---|---|
+| B1 | 541–570 → true | AC1 | Over-strict check such as `start <= now + 1` (pairs with T02) |
+| B2 | 720–721 → true | AC1 | Rejecting a 1-minute booking (pairs with T03) |
+| B3 | 1380–1440 → true | AC1 | `end >= 1440` instead of `>` |
+| B4 | now = −30, −10–30 → false | AC1 (0 ≤ start) | No lower-bound check; **fails on the current code** |
+| B5 | now = −1, 0–60 → true | AC1 | Over-strict fix such as `start <= 0` |
+| B10, B11 | NaN start, Infinity end → false | AC1 ("accept *only* when…") | Loss of the finiteness guard. These were todos before; the "only when" wording settles them. |
+| B7 | 660–720 between two bookings → true | AC4 | `<=` on either side when there are several bookings (pairs with X2) |
+| B8 | 630–690, unsorted bookings → false | AC4 | Early exit that assumes bookings are sorted |
+
+## Implementation fixes
+
+These are separate from the test repairs. The tests were not adjusted to match the current code.
+
+**Expected next run:** 28 pass, 1 fails, 3 todo. The failure is **B4** with `expected true to be false`. With `now = −30`, a start of −10 counts as "after now", so nothing rejects it. Then the `if (start >= 0)` guard skips the overlap check entirely.
+
+Suggested change to `src/booking.ts`:
+
+```diff
+   if (!Number.isFinite(start) || !Number.isFinite(end)) return false;
++  if (start < 0) return false;
+   if (end > DAY_END) return false;
+   ...
+-  if (start >= 0) {
+-    for (const b of bookings) {
+-      if (start < b.end && end > b.start) return false;
+-    }
+-  }
++  for (const b of bookings) {
++    if (start < b.end && end > b.start) return false;
++  }
+```
+
+The comment in `booking.ts` says these conditions were copied from `checkAvailability()` in `availability.ts`. That function probably has the same gap, so fix both, or make one call the other.
+
+## Still unclear
+- **Is `now` guaranteed to be ≥ 0?** Even if it is, B4 and B5 are worth keeping: AC1 states the `0 ≤ start` rule for `canBook` itself.
+- **Are fractional minutes such as 600.5 valid input?** The ACs don't say, so this stays a todo.
+- **The UI half of AC5 and all of AC6 can't be tested through `canBook`.** These are the "Available" / "Unavailable" label, layout at desktop and mobile width, and validation messages. They need component or e2e tests.
+```
+Run of the improved suite before the implementation fix:
+
+```text
+  RUN  v3.2.7 C:/Users/Huawei/se-practice/week-07/app
+
+ ❯ src/booking.test.ts (29 tests | 1 failed) 8ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T01 AC4: 660-720 only touches the end of the booking 1ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T02 AC1: 540-570 starts exactly at now 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T03 AC1: 720-720 has zero duration 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T04 AC1: 750-720 is reversed 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T05 AC1: 1380-1441 ends past the end of the day 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T06 AC2: 720-840 is exactly 120 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T07 AC2: 720-841 is 121 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T08 AC4: 570-600 only touches the start of the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T09 AC4: 630-690 partly overlaps the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T10 AC4: 570-690 contains the whole booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T11 AC4: 615-645 lies inside the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T12 AC4: 600-660 is identical to the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T13 AC3: 660-720 in a blocked room 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T14 AC4: 630-690 with no existing bookings 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Available request (660-720) leaves the bookings exactly as before 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Unavailable request (630-690) does not remove or edit the conflicting booking 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: frozen, unsorted bookings are never changed in place, on either outcome 0ms
+   ✓ X1, X2: my own cases from the plan > X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes 0ms
+   ✓ X1, X2: my own cases from the plan > X2 AC4: 690-750 is clear of 600-660 but overlaps the second booking 720-780 0ms
+   ✓ B1-B11: boundaries added in the review > B1 AC1: 541-570 starts one minute after now 0ms
+   ✓ B1-B11: boundaries added in the review > B2 AC1: 720-721 is a one-minute booking 0ms
+   ✓ B1-B11: boundaries added in the review > B3 AC1: 1380-1440 ends exactly at 24:00 (60 minutes) 0ms
+   × B1-B11: boundaries added in the review > B4 AC1: -10 to 30 with now = -30 starts before 0 4ms
+     → expected true to be false // Object.is equality
+   ✓ B1-B11: boundaries added in the review > B5 AC1: 0-60 with now = -1 starts exactly at 0 0ms
+   ✓ B1-B11: boundaries added in the review > B7 AC4: 660-720 fills the gap and touches two bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B8 AC4: 630-690 overlaps the second of two unsorted bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B9 AC1: 660-720 with now = 660 uses the supplied now 0ms
+   ✓ B1-B11: boundaries added in the review > B10 AC1: a NaN start is not a valid interval 0ms
+   ✓ B1-B11: boundaries added in the review > B11 AC1: an Infinity end is past 1440 0ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > B1-B11: boundaries added in the review > B4 AC1: -10 to 30 with now = -30 starts before 0
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/booking.test.ts:151:50
+    149| 
+    150|   test('B4 AC1: -10 to 30 with now = -30 st…
+    151|     expect(decide(input(-10, 30, { now: -30…
+       |                                                  ^
+    152|   });
+    153| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 28 passed (29)
 ```
 
 ### 6.3 The final run
@@ -271,7 +467,6 @@ is still open, leave its test failing and explain it in 9.1.
 ```text
 (paste here)
 ```
-
 ---
 
 ## 7. Task 6 — deliberate defects
