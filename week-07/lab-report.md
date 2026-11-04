@@ -1,25 +1,21 @@
 # Week 07 — Lab report
 
-**Name:**
-**Group:**
-**Date:**
-
-Fill in every section. **Do not delete, rename or renumber the headings.** The checker and the
-grader find your answers by them. You can add rows to any table, but never remove its header.
-
+**Name:** Anzara Nurbek
+**Group:** SE-Monday, 16:00-19:00
+**Date:** 04-11-2026
 ---
 
 ## 1. Setup
 
 | | |
 | --- | --- |
-| Project I continue (`week-06` = my Week 06 Bolt project, `starter` = the provided starter) | |
-| Bolt project link (or `not shared`, and why) | |
+| Project I continue (`week-06` = my Week 06 Bolt project, `starter` = the provided starter) |  week-06 |
+| Bolt project link (or `not shared`, and why) | https://bolt.new/~/sb1-andhqeqd |
 | Assistant that generated the tests (tool) | |
 | Exact model (with its version, or `not displayed`) | |
-| Where I ran the tests (Bolt terminal / my computer / Codespace) | |
+| Where I ran the tests (Bolt terminal / my computer / Codespace) | my computer |
 | Vitest version (the `RUN  v…` line of a run) | |
-| Test command | |
+| Test command | npx vitest run |
 
 ---
 
@@ -29,16 +25,31 @@ grader find your answers by them. You can add rows to any table, but never remov
 
 | | |
 | --- | --- |
-| File and function (or "inside the page component") | |
-| Its inputs | |
-| What it returned | |
-| How the page used it | |
+| File and function (or "inside the page component") | src/availability.ts, checkAvailability() |
+| Its inputs | roomId, start, end, currentTime, rooms, bookings |
+| What it returned | { kind: "available" } or { kind: "unavailable", reasons: [...] } |
+| How the page used it | App.tsx called it inside useMemo on every input change and passed the result to VerdictPanel, which showed Available or Unavailable with the reasons |
 
 **What I changed to extract `canBook`.** Say which file it now lives in, what you moved, and why
 the behaviour did not change. Also say which file of the page now calls it. 40 words or more.
 
-<!-- Write below this line -->
+The booking decision now lives in a separate function, canBook(), in src/booking.ts. It takes one object, { start, end, now, blocked, bookings }. The page finds the room itself, passes room.blocked and only that room’s bookings, and passes currentTime as now. If the room does not exist, App.tsx decides on its own (if (!room) return details;), so canBook() does not check for that.
 
+I moved these conditions:
+
+start and end must be numbers.
+start must be before end.
+start must not be in the past relative to now.
+end must be no later than 1440 (AC1).
+The duration must be at most 120 minutes (AC2).
+The room must not be blocked (AC3).
+The interval must not overlap an existing booking.
+
+In the original, the overlap check ran only when start >= 0. That condition looks suspicious, but I kept it exactly as it was, because the task is to copy the logic without fixing it.
+
+Behaviour did not change because I moved the conditions without rewriting them. canBook() returns true in exactly the cases where checkAvailability() used to return { kind: "available" }. I checked this in the browser with the same intervals as before: 11:00–12:00 is still Available, and 10:30–11:30 and 11:00–13:30 are still Unavailable.
+
+App.tsx now imports canBook() and uses its result to decide between Available and Unavailable. The user-facing messages still come from checkAvailability(), which builds the list of reasons that VerdictPanel displays, so the text the user sees is the same as before.
 ---
 
 ## 3. Task 2 — the test plan
@@ -49,23 +60,23 @@ for every test. **The Expected column comes from AC1–AC4, never from the code.
 
 | ID | Candidate / changed input | Expected | AC | Reason (in your words) |
 | --- | --- | --- | --- | --- |
-| T01 | 660–720 (touching after) | true | AC4 | |
-| T02 | 540–570 (starts now) | false | AC1 | |
-| T03 | 720–720 (zero duration) | false | AC1 | |
-| T04 | 750–720 (reversed) | false | AC1 | |
-| T05 | 1380–1441 (past day end) | false | AC1 | |
-| T06 | 720–840 (120 minutes) | true | AC2 | |
-| T07 | 720–841 (121 minutes) | false | AC2 | |
-| T08 | 570–600 (touching before) | true | AC4 | |
-| T09 | 630–690 (partial overlap) | false | AC4 | |
-| T10 | 570–690 (contains booking) | false | AC4 | |
-| T11 | 615–645 (inside booking) | false | AC4 | |
-| T12 | 600–660 (identical interval) | false | AC4 | |
-| T13 | 660–720, blocked = true | false | AC3 | |
-| T14 | 630–690, bookings = [] | true | AC4 | |
-| AC5 | an Available request — the bookings after the call equal the bookings before | true, data unchanged | AC5 | |
-| X1 | | | | |
-| X2 | | | | |
+| T01 | 660–720 (touching after) | true | AC4 | 660 is excluded from 600–660, so the intervals only touch; start 660 > now 540; duration 60 |
+| T02 | 540–570 (starts now) | false | AC1 | start 540 is not later than now 540; a booking that starts at the current minute is already too late |
+| T03 | 720–720 (zero duration) | false | AC1 | start 720 is not before end 720, so the duration is 720 − 720 = 0 minutes |
+| T04 | 750–720 (reversed) | false | AC1 | start 750 > end 720, so the duration is 720 − 750 = −30 minutes |
+| T05 | 1380–1441 (past day end) | false | AC1 | end 1441 > 1440, so the booking runs one minute past midnight |
+| T06 | 720–840 (120 minutes) | true | AC2 | duration 840 − 720 = 120 ≤ 120, so it is exactly at the limit; 720 ≥ 660, so no overlap |
+| T07 | 720–841 (121 minutes) | false | AC2 | duration 841 − 720 = 121 > 120, one minute over the limit |
+| T08 | 570–600 (touching before) | true | AC4 | end 600 is excluded from 570–600, so it only touches the booking that starts at 600; start 570 > now 540 |
+| T09 | 630–690 (partial overlap) | false | AC4 | 630 < 660 and 690 > 600, so 630–660 is shared with the booking |
+| T10 | 570–690 (contains booking) | false | AC4 | 570 < 660 and 690 > 600; the whole booking 600–660 lies inside the request |
+| T11 | 615–645 (inside booking) | false | AC4 | 615 < 660 and 645 > 600; the whole request lies inside the booking 600–660 |
+| T12 | 600–660 (identical interval) | false | AC4 | 600 < 660 and 660 > 600; all 60 minutes are already booked |
+| T13 | 660–720, blocked = true | false | AC3 | the times are the same as in T01, which is true, so the only difference is blocked = true, and a blocked room must reject every request, even a valid one |
+| T14 | 630–690, bookings = [] | true | AC4 | the same interval as T09 is false with booking 600–660, but with no bookings there is nothing to overlap; start 630 > now 540; duration 60 |
+| AC5 | an Available request — the bookings after the call equal the bookings before | true, data unchanged | AC5 | bookings still hold exactly one entry, 600–660, after the call; canBook only returns a decision and does not add the requested interval |
+| X1 | 1320–1440 (ends at midnight, 120 minutes) | true | AC1, AC2 | end 1440 ≤ 1440, so ending exactly at midnight is allowed; duration 1440 − 1320 = 120 ≤ 120; 1320 ≥ 660, so no overlap |
+| X2 | 690–750, bookings = [600–660, 720–780] | false | AC4 | 690 ≥ 660, so no overlap with the first booking; 690 < 780 and 750 > 720, so it overlaps the second one. The result is false only if every booking is checked |
 
 X1 and X2 are **your own two cases**: a boundary or a state that T01–T14 do not reach. Fill all
 five columns.
