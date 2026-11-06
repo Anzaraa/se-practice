@@ -1,0 +1,55 @@
+# week-07/submission.yml — your declaration for this lab.
+#
+# Facts only. Every explanation goes in lab-report.md; nothing here repeats prose.
+# Fill every value. Check it before you push:
+#
+#     python tests/validate_submission.py
+#
+# The validator checks shape, never quality. A green run is the floor, not the grade.
+# If you cannot run Python, fill the file by hand against the comments — a malformed
+# file costs you nothing if the content is there.
+
+schema: 1
+week: "07"
+
+student:
+  name: Anzara Nurbek
+  student_id: 24B031941
+  github: Anzaraa
+
+assistant:
+  tool: Claude
+  model: Claude Opus 5.5
+
+project:
+  baseline: week-06
+  bolt_url: https://bolt.new/~/sb1-andhqeqd
+  vitest: 3.2.7
+
+counts:
+  tests_first: 6
+  tests_final: 29
+  first_run_failed: 0
+  review_decisions: 6
+  mutants_detected: 3
+
+checker:
+  pass: 33
+  fail: 0
+  error: 0
+  commit: 4755dc3
+  known_fails: []
+
+assumptions:
+  invalid_existing_booking: returns-true
+
+review_findings:
+  - "T01-T14: the first suite ran all cases through one it.each table, so no ID had its own test; split into one test per case"
+  - "AC1 / suites/first/booking.test.ts: the first suite pinned the clock with vi.useFakeTimers and new Date although canBook only reads the supplied now; removed in the final suite"  - "S9: the first suite pinned the clock with vi.useFakeTimers and new Date although canBook only reads the supplied now; removed"
+  - "M2: touching endpoints as overlap was detected by T01, T08, B7 and the AC5 test"
+
+honesty:
+  first_suite_unedited: yes
+  outputs_unedited: yes
+  mutants_restored: yes
+  ai_usage_disclosed: yes
