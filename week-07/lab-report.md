@@ -824,13 +824,8 @@ screenshot of each as `evidence/ui-1.png` … `evidence/ui-5.png`. Take **ui-4 a
 
 ## 10. Conclusion (120–180 words)
 
-<!-- Answer all three in your own words, without the assistant:
-     (a) Which mistake in the FIRST suite would have let a wrong canBook pass, and how did you find it?
-     (b) What does your final green run prove, and what does it NOT prove? Use a mutant or a UI check.
-     (c) One testing limitation that remains.
-     Worthless: "The AI wrote good tests and they all passed."
-     Worth everything: "The first suite expected T06 (exactly 120 minutes) to be rejected. That
-     contradicts AC2, and it failed on a correct canBook. If I had changed the code to make it
-     pass, M1 would have become the real behaviour." -->
+**(a)** The first suite never had a case with start < 0. With now = 540, `start > now` hid AC1's "0 ≤ start" rule. A canBook with no lower-bound check, which was the real code, passed all 18 tests. The assistant flagged it as an unclear requirement, and I confirmed it by reading AC1 against the code: start > now only implies start ≥ 0 when now ≥ 0. B4 (now = −30, interval −10–30 → false) then failed on the real canBook. I fixed the code, not the expectation.
 
-<!-- Write your conclusion below this line -->
+**(b)** The green run proves that canBook gives the expected decision at every listed boundary and leaves bookings unchanged. Mutants M1–M3 are killed. For example, M2 (touching as overlap) made T01, T08, B7 and the AC5 test fail. It does not prove that the page works. AC6 layout at mobile width, and the fact that "12:00 AM" is read as midnight and confuses users, were only checked by hand.
+
+**(c)** Fractional minutes such as 600.5 are still unspecified, so no test covers them.
