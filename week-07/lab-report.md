@@ -789,39 +789,34 @@ screenshot of each as `evidence/ui-1.png` … `evidence/ui-5.png`. Take **ui-4 a
 
 | # | Action | Expected observation | AC | What I observed | Pass / Fail / Not testable |
 | --- | --- | --- | --- | --- | --- |
-| U1 | Check 11:00–12:00, unblocked | Available, with the fixed sample booking | AC5 | | Pass / Fail / Not testable |
-| U2 | Enable blocked, then check again | Unavailable replaces the earlier result | AC3, AC5 | | Pass / Fail / Not testable |
-| U3 | Clear a required input and submit | Understandable validation feedback | AC6 | | Pass / Fail / Not testable |
-| U4 | Use a narrow (phone) width | Controls and result remain usable | AC6 | | Pass / Fail / Not testable |
-| U5 | Repeat the checks on the same data | Existing bookings remain unchanged | AC5 | | Pass / Fail / Not testable |
+| U1 | Check 11:00–12:00, unblocked | Available, with the fixed sample booking | AC5 | Drew Hall 105, now 09:00: green "Available"; schedule shows Morning Lecture 10:00–11:00 | Pass |
+| U2 | Enable blocked, then check again | Unavailable replaces the earlier result | AC3, AC5 | after clicking "20 seats" the card shows Blocked; result changed to "Unavailable — Drew Hall 105 is currently blocked and cannot be booked" | Pass |
+| U3 | Clear a required input and submit | Understandable validation feedback | AC6 | Start cleared: "Unavailable — Start and end times are required." Note: in 12-hour format, 12:00 AM (midnight) was easy to confuse with noon and gave "Start time must be earlier than end time" | Pass |
+| U4 | Use a narrow (phone) width | Controls and result remain usable | AC6 | narrow portrait window: room cards in two columns, inputs and result stacked and readable | Pass |
+| U5 | Repeat the checks on the same data | Existing bookings remain unchanged | AC5 | after several checks the schedule still shows only Morning Lecture 10:00–11:00 | Pass |
 
 ---
 
-## 9. Comparison and what still fails
-
 ### 9.1 Checks I am keeping as FAIL or ERROR
-
-Use the same IDs as `known_fails` in `submission.yml`. Write `none` if the run is clean.
 
 | Check | Why it stays |
 | --- | --- |
-| | |
+| none | |
 
 ### 9.2 Original and improved suites
 
 | Measure | First suite | Improved suite |
 | --- | --- | --- |
-| Executed / passed / failed | | |
-| Requirements with meaningful tests (AC IDs and gaps) | | |
-| Selected mutants detected | | |
-| Accepted / revised / rejected tests | | |
-| Remaining limitations | | |
+| Executed / passed / failed | 22 collected: 18 passed, 0 failed, 4 todo (not executed) | 29 executed: 29 passed, 0 failed (before the start < 0 fix: 28 passed, 1 failed — B4) |
+| Requirements with meaningful tests (AC IDs and gaps) | AC1–AC4 via one it.each table, AC5 on an Available call; gaps: no 0 ≤ start case, no one-minute or "start just after now" boundaries, AC6 not testable | AC1 (T02–T05, X1, B1–B5, B9–B11), AC2 (T06, T07, X1), AC3 (T13), AC4 (T01, T08–T12, T14, X2, B7, B8), AC5 (three tests, Available and Unavailable); gap: AC6 and the visible part of AC5 only by hand (section 8) |
+| Selected mutants detected | not run on the first suite | 3 of 3: M1 by T06, X1; M2 by T01, T08, AC5, B7; M3 by T13 |
+| Accepted / revised / rejected tests | — | accepted: all 16 expected values, the AC5 snapshot idea, B1–B5, B7–B11; revised: it.each split into one test per ID; rejected: fake timers with new Date, 4 it.todo, "repeated calls" test |
+| Remaining limitations | uses the clock, table-driven, todo tests | AC6 and the on-screen labels are not unit-tested; fractional minutes undecided; the generating assistant (Claude) is the same family as the assistant that helped me, so its review is not fully independent |
 
 ### 9.3 What no AC decides
 
-Call your function with `bookings = [{ start: 700, end: 650 }]` (a reversed existing booking)
-and a request of 660–720. What does it return? Does any AC say what it should return? (This is
-the value you declare in `submission.yml` under `assumptions.invalid_existing_booking`.)
+- With bookings = [{ start: 700, end: 650 }] and a request 660–720, canBook returns **true**. The overlap test `660 < 650 && 720 > 700` is false, so the reversed booking is treated as if it blocks nothing.
+- No AC says what to do with an invalid existing booking: AC4 only talks about overlaps with existing bookings and assumes they are valid. I keep `returns-true` and note that the page's sample data never contains a reversed booking.
 
 -
 
