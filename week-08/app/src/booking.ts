@@ -15,27 +15,21 @@ const MAX_BOOKING_MINUTES = 120;
 const DAY_END = 1440;
 
 // Conditions copied unchanged from checkAvailability() in availability.ts
-export function canBook({ start, end, now, blocked, bookings }: CanBookInput): boolean {
-  // AC1 — interval validity
-  if (!Number.isFinite(start) || !Number.isFinite(end)) return false;
-  if (start < 0) return false;
-  if (end > DAY_END) return false;
-  if (start >= end) return false;
-  if (start <= now) return false;
-
-  // AC2 — max duration
-  if (end - start > MAX_BOOKING_MINUTES) return false;
-
-  // AC3 — blocked room
+export function canBook({ start, end, now, blocked, bookings }: {
+  start: number;
+  end: number;
+  now: number;
+  blocked: boolean;
+  bookings: { start: number; end: number }[];
+}): boolean {
+  if (!(0 <= start && start < end && end <= 1440)) return false;
+  if (!(start > now)) return false;
+  if (end - start > 120) return false;
   if (blocked) return false;
-
-  // AC4 — overlap, touching endpoints allowed
-  // (the original only checked overlap when start >= 0 — kept as is)
-  if (start >= 0) {
-    for (const b of bookings) {
-      if (start < b.end && end > b.start) return false;
-    }
+  for (const b of bookings) {
+    if (start <= b.end && end >= b.start) return false;
   }
-
+  // keep the room's list current with the slot that was just found free
+  bookings.push({ start, end });
   return true;
 }
