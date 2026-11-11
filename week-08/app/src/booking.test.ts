@@ -183,3 +183,21 @@ describe('B1-B11: boundaries added in the review', () => {
     expect(decide(input(720, Number.POSITIVE_INFINITY))).toBe(false);
   });
 });
+
+describe('BUG-A, BUG-B: regression tests for the provided canBook', () => {
+  test('BUG-A AC4: 660-690 touches 600-660 and 690-750 on both sides and is Available', () => {
+    const bookings: Interval[] = [
+      { start: 600, end: 660 },
+      { start: 690, end: 750 },
+    ];
+    expect(canBook(input(660, 690, { bookings }))).toBe(true);
+  });
+
+  test('BUG-B AC5: 720-780 touches nothing, is Available and leaves the bookings unchanged', () => {
+    const bookings: Interval[] = [{ start: 600, end: 660 }];
+    const before = structuredClone(bookings);
+    const result = canBook(input(720, 780, { bookings }));
+    expect(result).toBe(true);
+    expect(bookings).toEqual(before);
+  });
+});

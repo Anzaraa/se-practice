@@ -432,9 +432,10 @@ One row per defect. At least **BUG-A and BUG-B**. "Suspected cause" is your hypo
 
 | Defect | Test ID | Input | Expected | Actual | Suspected cause (line and why) |
 | --- | --- | --- | --- | --- | --- |
-| BUG-A | | | | | |
-| BUG-B | | | | | |
+| BUG-A | T01 (also T08, B7, AC5 Available, AC5 frozen) | now = 540, bookings = [600–660], request 660–720 | `true` (the request only touches the booking at 660, no shared minute) | `false` | Line 30: `if (start <= b.end && end >= b.start) return false;` uses `<=` and `>=`, so touching counts as a clash. It should be `start < b.end && end > b.start`. |
+| BUG-B | T06 (also T14, X1, B1, B2, B3, B5) | now = 540, bookings = [600–660], request 720–840 | `true`, and bookings stay [600–660] | bookings become [600–660, 720–840]; the test fails at `booking.test.ts:27` | Line 33: `bookings.push({ start, end });` adds the request to the list when the slot is free. AC5 says the function should only answer, not change the data. |
 
+Note: AC5 Available (660–720) failed with false because BUG-A rejected the request before line 33 ran, so it failed for the wrong reason. After the BUG-A fix, I expect AC5 frozen to hit a TypeError from line 33 (expected, not yet observed).
 ---
 
 ## 4. Tasks 2–3 — the skill
