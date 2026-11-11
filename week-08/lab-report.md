@@ -12,7 +12,7 @@
 | --- | --- |
 | Assistant I debugged with (tool) | Claude |
 | Exact model (with its version, or `not displayed`) | Claude Opus 5.5 |
-| Where the skill was installed (ChatGPT / Claude web / Claude Code / prompt-only simulation) | |
+| Where the skill was installed (ChatGPT / Claude web / Claude Code / prompt-only simulation) | Claude web |
 | Where I ran the tests (Bolt terminal / my computer / Codespace) | my computer |
 | Vitest version (the `RUN  v…` line of a run) | v3.2.7 |
 | Language of my booking module (`ts` or `js`) — the file I copied from `buggy/` | ts |
@@ -851,7 +851,7 @@ bug-detector/SKILL.md                          2026-11-11 14:58:10          582
 skill as enabled. If upload was not available, write `prompt-only simulation` and say why.
 Screenshot of the result: `evidence/install.png`.
 
-<!-- Write below this line -->
+Uploaded bug-detector.zip in Claude web (Settings → Skills → upload). The upload showed no errors; bug-detector v1 appeared with SKILL.md inside and the toggle switched on. Screenshot: evidence/install.png.
 
 ---
 
