@@ -1113,9 +1113,9 @@ tests showed. Write a short verdict in each cell, and give a reason where they d
 | Criterion | No skill | With skill |
 | --- | --- | --- |
 | Correct root cause | Correct: line start <= b.end && end >= b.start, half-open intervals; also found the push (AC5) | Correct for both defects, same lines |
-| Reproducible test | Uses it.each (forbidden in our suite, S2); its   test uses touching 660–720, so on the buggy code it fails on BUG-A, not BUG-B | AC5 case 700–760 touches nothing, so it isolates BUG-B; given as a table, not code |
+| Reproducible test | Uses it.each (forbidden in our suite, S2); its AC5 test uses touching 660–720, so on the buggy code it fails on BUG-A, not BUG-B | AC5 case 700–760 touches nothing, so it isolates BUG-B; given as a table, not code |
 | Minimal proposed patch |Right change, but both bugs in one diff and it also deletes the comment line | Right change for each bug separately; BUG-B fix also deletes the comment (2 lines) |
-| Unsupported claims | “540–600 is rejected by this bug” (AC1 rejects it first, now = 540); “the two AC5 tests fail because of the push” (on the buggy code one fails on BUG-A, the other passes)| “no test caught 541–600” (T08 did); “reproduced in Node” (not shown / shown — check) |
+| Unsupported claims | “540–600 is rejected by this bug” (AC1 rejects it first, now = 540); “the two AC5 tests fail because of the push” (on the buggy code one fails on BUG-A, the other passes)| no test caught 541–600" (T08 did); "I reproduced both in Node" not shown |
 | Clarity of explanation | Clear step table for T01; mixes facts and guesses | Clear; separates confirmed defects from hypotheses (skill step 4) |
 
 **Which bugs did each answer find?** (BUG-A, BUG-B, both, neither)
@@ -1272,18 +1272,10 @@ Use the same IDs as `known_fails` in `submission.yml`. Write `none` if the run i
 ### 9.2 One limitation of AI-assisted debugging
 
 <!-- Use something that actually happened in sections 5-8. 20 words or more. -->
--
+- The assistant without the skill claimed that its two proposed AC5 tests (“same answer twice” and “earlier result”) fail on the current code because of the push on line 33. This was wrong: both use 660–720, which touches the booking, so on the broken code BUG-A returns false before line 33 runs. The first test fails for that reason, and the second one actually passes. The AI did not run the tests, so the reason a test fails must be checked by me in the real test output.
 
 ---
 
 ## 10. Conclusion (80–150 words)
 
-<!-- Answer both, in your own words, without the assistant (3-5 sentences, as the deck asks):
-     (a) Did the skill help? Show it with one row of section 7.
-     (b) What did your tests actually prove - and what did they not?
-     Worthless: "The skill made the AI much better at debugging."
-     Worth everything: "Both answers found BUG-A from the T01 failure. Only the skill answer
-     separated BUG-B as a hypothesis instead of a fact, because step 4 told it to. BUG-B was only
-     visible after the BUG-A patch: the AC5 test had been failing for the wrong reason." -->
-
-<!-- Write your conclusion below this line -->
+The skill helped a little: both answers found the same two bugs, but the skill answer gave a cleaner AC5 test and kept facts apart from guesses. For example, in the “Reproducible test” row, the skill answer used 700–760, which touches nothing and isolates BUG-B, while the plain answer used 660–720, which fails on BUG-A first. My tests proved both bugs: BUG-A failed in T01, T08 and B7. BUG-B showed in T06 and T14 from the start, but in T01, B7 and AC5 it stayed hidden until the BUG-A fix, and then “AC5 frozen” gave a TypeError on line 33. After two one-line changes, all 31 tests passed. They did not prove AC6, because the tests only call canBook and never open the UI on desktop or mobile.
