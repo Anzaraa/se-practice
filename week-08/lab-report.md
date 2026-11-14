@@ -1158,8 +1158,104 @@ BUG-A passes. The remaining 13 failures are BUG-B: the touching cases now reach 
 The change as a diff, then the real output of the **full** suite. Every test must pass.
 
 ```text
-(paste here)
-```
+$ git --no-pager diff week-08/app/src/booking.ts
+diff --git a/week-08/app/src/booking.ts b/week-08/app/src/booking.ts
+index 7f801d0..2540ca5 100644
+--- a/week-08/app/src/booking.ts
++++ b/week-08/app/src/booking.ts
+@@ -30,6 +30,5 @@ export function canBook({ start, end, now, blocked, bookings }: {
+     if (start < b.end && end > b.start) return false;
+   }
+   // keep the room's list current with the slot that was just found free
+-  bookings.push({ start, end });
+   return true;
+ }
+
+$ npx vitest run -t "BUG-B"
+
+  RUN  v3.2.7 C:/Users/Huawei/se-practice/week-08/app
+
+ ✓ src/booking.test.ts (31 tests | 29 skipped) 2ms
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T01 AC4: 660-720 only touches the end of the booking
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T02 AC1: 540-570 starts exactly at now
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T03 AC1: 720-720 has zero duration
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T04 AC1: 750-720 is reversed
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T05 AC1: 1380-1441 ends past the end of the day
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T06 AC2: 720-840 is exactly 120 minutes
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T07 AC2: 720-841 is 121 minutes
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T08 AC4: 570-600 only touches the start of the booking
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T09 AC4: 630-690 partly overlaps the booking
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T10 AC4: 570-690 contains the whole booking
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T11 AC4: 615-645 lies inside the booking
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T12 AC4: 600-660 is identical to the booking
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T13 AC3: 660-720 in a blocked room
+   ↓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T14 AC4: 630-690 with no existing bookings
+   ↓ AC5: a decision without changing the booking data > AC5: an Available request (660-720) leaves the bookings exactly as before
+   ↓ AC5: a decision without changing the booking data > AC5: an Unavailable request (630-690) does not remove or edit the conflicting booking
+   ↓ AC5: a decision without changing the booking data > AC5: frozen, unsorted bookings are never changed in place, on either outcome
+   ↓ X1, X2: my own cases from the plan > X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes
+   ↓ X1, X2: my own cases from the plan > X2 AC4: 690-750 is clear of 600-660 but overlaps the second booking 720-780
+   ↓ B1-B11: boundaries added in the review > B1 AC1: 541-570 starts one minute after now
+   ↓ B1-B11: boundaries added in the review > B2 AC1: 720-721 is a one-minute booking
+   ↓ B1-B11: boundaries added in the review > B3 AC1: 1380-1440 ends exactly at 24:00 (60 minutes)
+   ↓ B1-B11: boundaries added in the review > B4 AC1: -10 to 30 with now = -30 starts before 0
+   ↓ B1-B11: boundaries added in the review > B5 AC1: 0-60 with now = -1 starts exactly at 0
+   ↓ B1-B11: boundaries added in the review > B7 AC4: 660-720 fills the gap and touches two bookings
+   ↓ B1-B11: boundaries added in the review > B8 AC4: 630-690 overlaps the second of two unsorted bookings
+   ↓ B1-B11: boundaries added in the review > B9 AC1: 660-720 with now = 660 uses the supplied now
+   ↓ B1-B11: boundaries added in the review > B10 AC1: a NaN start is not a valid interval
+   ↓ B1-B11: boundaries added in the review > B11 AC1: an Infinity end is past 1440
+   ✓ BUG-A, BUG-B: regression tests for the provided canBook > BUG-A AC4: 660-690 touches 600-660 and 690-750 on both sides and is Available 1ms
+   ✓ BUG-A, BUG-B: regression tests for the provided canBook > BUG-B AC5: 720-780 touches nothing, is Available and leaves the bookings unchanged 0ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 29 skipped (31)
+   Start at  12:12:13
+   Duration  504ms (transform 43ms, setup 0ms, collect 64ms, tests 2ms, environment 0ms, prepare 131ms)
+
+$ npx vitest run
+
+ RUN  v3.2.7 C:/Users/Huawei/se-practice/week-08/app
+
+ ✓ src/booking.test.ts (31 tests) 3ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T01 AC4: 660-720 only touches the end of the booking 1ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T02 AC1: 540-570 starts exactly at now 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T03 AC1: 720-720 has zero duration 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T04 AC1: 750-720 is reversed 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T05 AC1: 1380-1441 ends past the end of the day 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T06 AC2: 720-840 is exactly 120 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T07 AC2: 720-841 is 121 minutes 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T08 AC4: 570-600 only touches the start of the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T09 AC4: 630-690 partly overlaps the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T10 AC4: 570-690 contains the whole booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T11 AC4: 615-645 lies inside the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T12 AC4: 600-660 is identical to the booking 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T13 AC3: 660-720 in a blocked room 0ms
+   ✓ T01-T14: the reviewed case table (now = 540, booking 600-660) > T14 AC4: 630-690 with no existing bookings 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Available request (660-720) leaves the bookings exactly as before 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: an Unavailable request (630-690) does not remove or edit the conflicting booking 0ms
+   ✓ AC5: a decision without changing the booking data > AC5: frozen, unsorted bookings are never changed in place, on either outcome 0ms
+   ✓ X1, X2: my own cases from the plan > X1 AC1 AC2: 1320-1440 ends exactly at 24:00 and lasts exactly 120 minutes 0ms
+   ✓ X1, X2: my own cases from the plan > X2 AC4: 690-750 is clear of 600-660 but overlaps the second booking 720-780 0ms
+   ✓ B1-B11: boundaries added in the review > B1 AC1: 541-570 starts one minute after now 0ms
+   ✓ B1-B11: boundaries added in the review > B2 AC1: 720-721 is a one-minute booking 0ms
+   ✓ B1-B11: boundaries added in the review > B3 AC1: 1380-1440 ends exactly at 24:00 (60 minutes) 0ms
+   ✓ B1-B11: boundaries added in the review > B4 AC1: -10 to 30 with now = -30 starts before 0 0ms
+   ✓ B1-B11: boundaries added in the review > B5 AC1: 0-60 with now = -1 starts exactly at 0 0ms
+   ✓ B1-B11: boundaries added in the review > B7 AC4: 660-720 fills the gap and touches two bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B8 AC4: 630-690 overlaps the second of two unsorted bookings 0ms
+   ✓ B1-B11: boundaries added in the review > B9 AC1: 660-720 with now = 660 uses the supplied now 0ms
+   ✓ B1-B11: boundaries added in the review > B10 AC1: a NaN start is not a valid interval 0ms
+   ✓ B1-B11: boundaries added in the review > B11 AC1: an Infinity end is past 1440 0ms
+   ✓ BUG-A, BUG-B: regression tests for the provided canBook > BUG-A AC4: 660-690 touches 600-660 and 690-750 on both sides and is Available 0ms
+   ✓ BUG-A, BUG-B: regression tests for the provided canBook > BUG-B AC5: 720-780 touches nothing, is Available and leaves the bookings unchanged 0ms
+
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+   Start at  12:12:21
+   Duration  510ms (transform 53ms, setup 0ms, collect 73ms, tests 3ms, environment 0ms, prepare 135ms)
+   ```
+Both regression tests and the whole Week 07 suite pass. The comment on line 32 is now out of date; I left it so that the patch stays one line.
 
 ---
 
