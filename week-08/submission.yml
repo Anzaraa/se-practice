@@ -1,0 +1,58 @@
+# week-08/submission.yml — your declaration for this lab.
+#
+# Facts only. Every explanation goes in lab-report.md; nothing here repeats prose.
+# Fill every value. Check it before you push:
+#
+#     python tests/validate_submission.py
+#
+# The validator checks shape, never quality. A green run is the floor, not the grade.
+# If you cannot run Python, fill the file by hand against the comments — a malformed
+# file costs you nothing if the content is there.
+
+schema: 1
+week: "08"
+
+student:
+  name: Anzara Nurbek
+  student_id: 24B031941
+  github: Anzaraa
+
+assistant:
+  tool: Claude
+  model: Claude Opus 5.5
+
+skill:
+  environment: claude-web
+  invoked: not-shown        
+
+project:
+  language: ts
+  vitest: 3.2.7
+
+counts:
+  tests_final: 31
+  buggy_failed: 12
+  defects_logged: 2
+  lines_changed: 2
+
+checker:
+  pass: 31
+  fail: 0
+  error: 0
+  commit: fc44662
+  known_fails: []
+
+verdict:
+  skill_helped: yes
+
+review_findings:
+  - "BUG-B: the AC5 Available test (660-720) failed for the wrong reason until BUG-A was fixed - BUG-A returned false before the push on line 33"
+  - "AC5 frozen: after the BUG-A fix it failed with TypeError at booking.ts:33, which confirmed BUG-B on a frozen array"
+  - "Reproducible test: the skill answer isolated BUG-B with 700-760 (touches nothing); the plain answer used 660-720, which BUG-A rejects first"
+  - "T08: the skill answer claimed no test caught a request touching the start of a booking, but T08 (570-600) failed in section 2.2"
+
+honesty:
+  buggy_function_pasted_unchanged: yes
+  same_input_both_chats: yes
+  outputs_unedited: yes
+  ai_usage_disclosed: yes
