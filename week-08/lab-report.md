@@ -1267,7 +1267,7 @@ Use the same IDs as `known_fails` in `submission.yml`. Write `none` if the run i
 
 | Check | Why it stays |
 | --- | --- |
-| | |
+| none | the final checker run was clean: 31 PASS, 0 FAIL, 0 ERROR |
 
 ### 9.2 One limitation of AI-assisted debugging
 
