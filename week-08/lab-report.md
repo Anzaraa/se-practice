@@ -822,7 +822,7 @@ One row per defect. At least **BUG-A and BUG-B**. "Suspected cause" is your hypo
 | BUG-A | T01 (also T08, B7, AC5 Available, AC5 frozen) | now = 540, bookings = [600–660], request 660–720 | `true` (the request only touches the booking at 660, no shared minute) | `false` | Line 30: `if (start <= b.end && end >= b.start) return false;` uses `<=` and `>=`, so touching counts as a clash. It should be `start < b.end && end > b.start`. |
 | BUG-B | T06 (also T14, X1, B1, B2, B3, B5) | now = 540, bookings = [600–660], request 720–840 | `true`, and bookings stay [600–660] | bookings become [600–660, 720–840]; the test fails at `booking.test.ts:27` | Line 33: `bookings.push({ start, end });` adds the request to the list when the slot is free. AC5 says the function should only answer, not change the data. |
 
-Note: AC5 Available (660–720) failed with false because BUG-A rejected the request before line 33 ran, so it failed for the wrong reason. After the BUG-A fix, I expect AC5 frozen to hit a TypeError from line 33 (expected, not yet observed).
+Note: AC5 Available (660–720) failed with `false` because BUG-A rejected the request before line 32 ran, so it failed for the wrong reason. Confirmed after the BUG-A fix: AC5 frozen failed with `TypeError: Cannot add property 2, object is not extensible` at booking.ts:33.
 ---
 
 ## 4. Tasks 2–3 — the skill
@@ -1063,14 +1063,14 @@ I found two confirmed defects. The first one is what makes T01 fail. The second 
 **Root cause**: the overlap check in the loop uses inclusive comparisons:
 ```ts
 if (start <= b.end && end >= b.start) return false;
-```
+
 For 660–720, the check is `660 <= 660 && 720 >= 600`, which is true, so the request is rejected. Treating the slots as half-open intervals `[start, end)` means only a real overlap counts.
 
 **Fix**:
 ```ts
 if (start < b.end && end > b.start) return false;
 ```
-
+```
 ## Defect 2: `canBook` changes the booking data (AC5)
 
 **Evidence**: a free request for 700–760 returns `true`, and afterwards the caller's array is `[{600,660},{700,760}]`. Calling it again with the same input now returns `false`. So one availability check changed the result of the next one.
@@ -1135,8 +1135,23 @@ Rerun the test that was failing, then the full suite.
 The change as a diff (`git diff`, or the old and the new line), then the real run:
 
 ```text
-(paste here)
+diff --git a/week-08/app/src/booking.ts b/week-08/app/src/booking.ts
+...
+-    if (start <= b.end && end >= b.start) return false;
++    if (start < b.end && end > b.start) return false;
+...
+
+$ npx vitest run -t "BUG-A"
+...
+      Tests  1 failed | 1 passed | 29 skipped (31)
+...
+
+$ npx vitest run
+...
+      Tests  13 failed | 18 passed (31)
+...
 ```
+BUG-A passes. The remaining 13 failures are BUG-B: the touching cases now reach the push at line 33.
 
 ### 8.2 The BUG-B patch and the final run
 
