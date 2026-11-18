@@ -214,14 +214,47 @@ already pushed to GitHub.
 Paste the **whole** output of your last `python tests/check_tool.py`, unedited.
 
 ```text
+$ python tests/check_tool.py
+PASS  D1    tool/check_room.json exists and is valid JSON
+PASS  D2    has name, description and inputSchema
+PASS  D3    name is exactly "check_room"
+PASS  D4    description: 25+ words, says minutes, 1440, and that it does not save
+PASS  D5    inputSchema: an object with exactly the five fields, all required
+PASS  D6    inputSchema uses only the keywords listed in README section 5
+PASS  S01   the R1 call, valid -> accept
+PASS  S02   no existing bookings: bookings = [] -> accept
+PASS  S03   end as a string: "11:00" -> refuse
+PASS  S04   now missing -> refuse
+PASS  S05   an extra field: "room": "204" -> refuse
+PASS  S06   start below the day: -30 -> refuse
+PASS  S07   end beyond the day: 1500 -> refuse
+PASS  S08   a booking with no end: {start: 660} -> refuse
+PASS  S09   blocked as a string: "false" -> refuse
+PASS  S10   start not a whole minute: 600.5 -> refuse
+PASS  S11   end at the end of the day: 1440 -> accept
+PASS  S12   a booking as a pair: [660, 720] -> refuse
+PASS  F1    calls\r1.json: a call to check_room
+PASS  F2    calls\r1.json: arguments valid against your schema
+PASS  F3    calls\r1.json: arguments equal the expected ones (README section 5, Part 2)
+PASS  F4    calls\r2.json: a call to check_room
+PASS  F5    calls\r2.json: arguments valid against your schema
+PASS  F6    calls\r2.json: arguments equal the expected ones (README section 5, Part 2)
+PASS  F7    calls/r3: exactly one of r3.json (it called) or r3.txt (it asked), not empty
+PASS  L1    section 5 names at least two acceptance criteria (AC1-AC6) the schema cannot check
+PASS  L2    section 6: A1-A8 each have allow / ask / block and a reason of 5+ words
+PASS  L3    section 7 names the checkpoint commit (a SHA)
+PASS  L4    section 10: a conclusion of 80-150 words
+PASS  L5    AI_USAGE.md filled in (a tool row, and signed)
+
+SUMMARY: 30 PASS · 0 FAIL · 0 ERROR  (of 30 checks)
+Paste this whole output into lab-report.md section 8, and these three numbers into submission.yml.
 
 ```
 
 ## 9. What still fails
 
-<!-- Every check in submission.yml known_fails, with the reason. "None" if all 30 pass. -->
+- None. All 30 checks pass at the last run.
 
 ## 10. Conclusion (80–150 words)
 
-<!-- What did you learn about the line between the schema, the model and the function? Be specific:
-     name a case, a request or an action. "Tool definitions are important" is worth nothing. -->
+The schema catches the shape of a call: types, required fields and ranges. In S05 it refused "room": "204" because additionalProperties is false, and in S03 and S10 it refused "11:00" and 600.5 because times must be whole minutes between 0 and 1440. Only the function catches the booking rules. The R2 call was valid against the schema, but a 150-minute booking of a blocked room is a “no” that only canBook gives (AC2, AC3). The schema also cannot compare start with end or with existing bookings. In R3 the model asked for the missing time instead of inventing numbers. For the agent I chose ask for A5 because git reset --hard deletes all uncommitted changes in the working tree, mine too, not just the agent’s edits, so a wrong guess there would lose my work with no undo.
