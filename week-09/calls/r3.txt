@@ -1,0 +1,1 @@
+What exact start and end time do you want tomorrow (for example 14:00–16:00)? Also, is the room blocked, and what bookings does it already have? Note that this tool only checks slots on the same day, so it can't check tomorrow until tomorrow.
