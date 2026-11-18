@@ -1,0 +1,44 @@
+# week-09/submission.yml — your declaration for this lab.
+#
+# Facts only. Every explanation goes in lab-report.md; nothing here repeats prose.
+# Fill every value. Check it before you push:
+#
+#     python tests/validate_submission.py
+#
+# The validator checks shape, never quality. A green run is the floor, not the grade.
+
+schema: 1
+week: "09"
+
+student:
+  name: Anzara Nurbek
+  student_id: 24B031941
+  github: Anzaraa
+
+assistant:
+  tool: Claude
+  model: Claude Opus 5.5
+  fresh_chats: yes
+
+calls:
+  r3: asked
+  first_run_s_fails: 1
+
+checker:
+  pass: 30
+  fail: 0
+  error: 0
+  commit: 4df6779
+  known_fails: []
+
+review_findings:
+  - "S05: my first schema accepted an extra field room = 204 because additionalProperties was missing"
+  - "R2: the call 840-990 (150 minutes, blocked = true) is valid against the schema; only canBook rejects it under AC2 and AC3"
+  - "R3: the model asked for start, end, blocked and bookings instead of inventing values, but asked three questions instead of one and never asked for now"
+  - "A5: git reset --hard deletes all uncommitted work, not only the agent's own edits, so it is ask, not allow"
+
+honesty:
+  definition_written_by_me: no
+  calls_unedited: yes
+  outputs_unedited: yes
+  ai_usage_disclosed: yes
