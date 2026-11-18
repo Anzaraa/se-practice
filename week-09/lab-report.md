@@ -166,26 +166,48 @@ Result: the model **asked** (saved as calls/r3.txt) and invented no values.
 
 ## 5. What the schema cannot check
 
-<!-- Name the acceptance criteria (AC1-AC6, README section 3) that a JSON Schema with the allowed keywords cannot
-     enforce, and say why for each. At least two, by their AC number. Which part of AC1 CAN the schema enforce? -->
+The allowed keywords check each value on its own (type, range, which keys exist). None of them can compare two
+fields with each other, and none of them can see what the function does after the call. So these stay in canBook:
+
+- **AC1 (partly)**: `start < end` and "start after `now`" compare two fields. `{"start": 600, "end": 600}` is a valid
+  call against my schema. What the schema CAN enforce of AC1 is the per-value part: every time is a whole number
+  and 0 <= value <= 1440 (S06, S07, S10, S11).
+- **AC2** (at most 120 minutes) needs `end - start`, arithmetic across two fields. R2 (840 -> 990, 150 minutes)
+  passed the schema; only canBook says it is too long.
+- **AC3** (not when blocked): the schema can only say `blocked` is a boolean. Both true and false are legal inputs;
+  deciding that true means Unavailable is the function's logic (R2).
+- **AC4** (no overlap, touching allowed) compares the request with every booking. `items` checks each booking
+  alone and cannot see the top-level `start`/`end`. In R1 the booking touches at 660; only canBook knows that is allowed.
+- **AC5** (does not save anything) is about behaviour, not input. The description can only promise it; canBook and
+  its tests must keep the promise.
+- **AC6** (the page's feedback) belongs to the UI, which a tool call never reaches.
 
 ## 6. Permissions — allow, ask or block
 
-| # | Action | Decision (allow / ask / block) | Reason (the risk, in one sentence or more) |
-| --- | --- | --- | --- |
-| A1 | call `check_room` with the times the user just typed | | |
-| A2 | read `week-08/app/src/booking.ts` | | |
-| A3 | edit `booking.ts` to raise the 120-minute limit to 180 | | |
-| A4 | run `npm test` in `week-08/app` | | |
-| A5 | run `git reset --hard` to undo its own last three edits | | |
-| A6 | `git commit` its change on the `week-09` branch | | |
-| A7 | `git push` to `main` | | |
-| A8 | send the contents of `.env` to an MCP server it found online | | |
+| A1 | call `check_room` with the times the user just typed | allow | It is read-only (AC5: it saves nothing) and the schema refuses malformed arguments, so the worst case is a wrong answer from a mis-converted time, which the user sees. |
+| A2 | read `week-08/app/src/booking.ts` | allow | Reading my own source code changes nothing and the file holds no secrets; the only risk is that the code enters the model's context, which is fine for course code. |
+| A3 | edit `booking.ts` to raise the 120-minute limit to 180 | block | It silently changes a business rule (AC2) for every user because one user asked for 3 hours; a user's request is not authority to change a requirement. |
+| A4 | run `npm test` in `week-08/app` | allow | It runs tests I wrote and reviewed in Week 08 and only prints results; the risk is that `npm test` runs whatever package.json says, so it stays allow only while that file is unchanged. |
+| A5 | run `git reset --hard` to undo its own last three edits | ask | `reset --hard` does not undo only the agent's edits: it deletes all uncommitted changes in the working tree, mine too, with no undo, so I must check `git status` first. |
+| A6 | `git commit` its change on the `week-09` branch | allow | A commit on my feature branch is local and reversible (back to the checkpoint in section 7); I still review the diff before pushing because it ends up in the graded PR. |
+| A7 | `git push` to `main` | block | It skips the pull-request review and publishes to the branch the course grades (the PR must stay open, never merged); a pushed commit cannot be cleanly taken back. |
+| A8 | send the contents of `.env` to an MCP server it found online | block | It sends secrets (API keys, passwords) to an unknown third party, which cannot be undone; "to configure it" is a typical prompt-injection excuse. |
 
 ## 7. Checkpoint
 
-<!-- The commit you would make before letting such an agent edit anything: its real SHA (git log --oneline),
-     the exact command that returns you to it, and what that command would throw away. -->
+Before letting the agent edit anything I commit everything on `week-09`. My checkpoint is the commit
+with the report sections 1-4: `ab5051f` (from `git log --oneline`).
+
+Command that returns me to it:
+
+```bash
+git reset --hard ab5051f
+```
+
+What it throws away: every commit on `week-09` made after the checkpoint (they stay reachable only through
+`git reflog` for a while), and every uncommitted change to tracked files, mine as well as the agent's, with no undo.
+New untracked files the agent created are NOT removed (that needs `git clean -fd`). It also does not undo anything
+already pushed to GitHub.
 
 ## 8. Checker output
 
